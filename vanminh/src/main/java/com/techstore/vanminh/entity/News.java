@@ -1,10 +1,7 @@
 package com.techstore.vanminh.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,8 +9,7 @@ import java.util.List;
 @Entity
 @Table(name = "news")
 @Data
-@Getter
-@Setter
+
 @NoArgsConstructor
 public class News {
     @Id

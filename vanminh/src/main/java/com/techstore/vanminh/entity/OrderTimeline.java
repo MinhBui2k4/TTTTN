@@ -7,8 +7,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "order_timeline")
 @Data
-@Getter
-@Setter
+
 @NoArgsConstructor
 public class OrderTimeline {
     @Id

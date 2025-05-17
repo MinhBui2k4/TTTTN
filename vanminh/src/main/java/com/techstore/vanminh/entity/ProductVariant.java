@@ -8,8 +8,7 @@ import java.util.List;
 @Entity
 @Table(name = "product_variants")
 @Data
-@Getter
-@Setter
+
 @NoArgsConstructor
 
 public class ProductVariant {

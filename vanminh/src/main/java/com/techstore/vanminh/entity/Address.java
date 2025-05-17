@@ -1,14 +1,14 @@
 package com.techstore.vanminh.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "addresses")
 @Data
-@Getter
-@Setter
-@NoArgsConstructor 
+@NoArgsConstructor
 public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,6 +16,8 @@ public class Address {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
+
     private User user;
 
     @Column(nullable = false)

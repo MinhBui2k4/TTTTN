@@ -1,52 +1,21 @@
 package com.techstore.vanminh.service;
 
-import java.util.Collections;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+import com.techstore.vanminh.dto.RegisterDTO;
 import com.techstore.vanminh.dto.UserDTO;
-import com.techstore.vanminh.entity.Role;
-import com.techstore.vanminh.entity.User;
-import com.techstore.vanminh.exception.ResourceNotFoundException;
-import com.techstore.vanminh.repository.RoleRepository;
-import com.techstore.vanminh.repository.UserRepository;
+import com.techstore.vanminh.dto.response.UserResponse;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
+public interface UserService {
 
+    UserDTO registerUser(RegisterDTO registerDTO);
 
-@Service
-public class UserService {
+    UserResponse getAllUsers(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 
-    @Autowired
-    private UserRepository userRepository;
+    UserDTO getUserById(Long userId);
 
-    @Autowired
-    private RoleRepository roleRepository;
+    UserDTO getUserByEmail(String email);
 
-    @Autowired
-    private ModelMapper modelMapper;
+    UserDTO updateUser(Long userId, UserDTO userDTO);
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    String deleteUser(Long userId);
 
-    public UserDTO createUser(UserDTO userDTO) {
-        User user = modelMapper.map(userDTO, User.class);
-        user.setPassword(passwordEncoder.encode(user.getPassword())); // Mã hóa mật khẩu
-
-        // Gán vai trò mặc định (USER)
-        Role userRole = roleRepository.findByName(Role.RoleName.USER)
-                .orElseThrow(() -> new ResourceNotFoundException("Role USER not found"));
-        user.setRoles(Collections.singletonList(userRole));
-
-        user = userRepository.save(user);
-        return modelMapper.map(user, UserDTO.class);
-    }
-
-    public UserDTO getUserById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
-        return modelMapper.map(user, UserDTO.class);
-    }
 }

@@ -3,14 +3,9 @@ package com.techstore.vanminh.dto;
 import lombok.Data;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Data
-public class UserDTO {
-    private Long id;
-
+public class RegisterDTO {
     @NotBlank(message = "Họ và tên không được để trống")
     private String fullName;
 
@@ -23,13 +18,7 @@ public class UserDTO {
 
     private String phone;
 
-    private String avatarUrl;
+    private String roleName; // Ví dụ: "USER", "ADMIN"
 
-    private MultipartFile avatarFile;
-
-    private List<AddressDTO> addresses;
-
-    private List<RoleDTO> roles;
-
-    private CartDTO cart;
+    // private MultipartFile avatarFile; // Thêm để hỗ trợ upload avatar
 }
