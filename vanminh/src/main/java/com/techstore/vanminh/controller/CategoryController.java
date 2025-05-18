@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 @RestController
-// @RequestMapping("/api/admin/categories")
-@RequestMapping("/api/categories")
+@RequestMapping("/api/admin/categories")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class CategoryController {
 
@@ -42,8 +41,9 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+    public ResponseEntity<?> deleteCategory(@PathVariable Long id) {
         categoryService.deleteCategory(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().body("Xóa danh mục thành công với id: " + id);
     }
+
 }

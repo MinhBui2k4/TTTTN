@@ -44,7 +44,9 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category; // Thay trường category (String) bằng Category entity
 
-    private String brand;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "brand_id")
+    private Brand brand; // Thay trường brand (String) bằng Brand entity
 
     private String sku;
 
