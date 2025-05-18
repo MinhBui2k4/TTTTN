@@ -1,16 +1,16 @@
 package com.techstore.vanminh.entity;
 
-import java.util.List;
-
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "users")
 @Data
-
+@Getter
+@Setter
 @NoArgsConstructor
-
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,11 +23,10 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    private String password; // Lưu mật khẩu đã mã hóa
+    private String password;
 
     private String phone;
 
-    // private MultipartFile avatarUrl;
     private String avatarUrl;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -38,5 +37,5 @@ public class User {
     private List<Role> roles;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Cart cart; // Thêm mối quan hệ với Cart
+    private Cart cart;
 }

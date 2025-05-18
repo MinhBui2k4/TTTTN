@@ -31,6 +31,7 @@ public class SecurityConfig {
         private static final String[] PUBLIC_ENDPOINTS = {
                         "/api/auth/**",
                         "/api/products/**",
+                        "/api/roles/**",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
@@ -53,6 +54,7 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf.disable())
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                // Trong SecurityConfig
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                                                 .requestMatchers(ADMIN_ENDPOINTS).hasAuthority("ROLE_ADMIN")

@@ -15,22 +15,23 @@ import java.util.stream.Collectors;
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+        @Autowired
+        private UserRepository userRepository;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + username));
+        @Override
+        public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+                User user = userRepository.findByEmail(username)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "User not found!"));
 
-        var authorities = user.getRoles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))
-                .collect(Collectors.toList());
+                var authorities = user.getRoles().stream()
+                                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName().name()))
+                                .collect(Collectors.toList());
 
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPassword())
-                .authorities(authorities)
-                .build();
-    }
+                return org.springframework.security.core.userdetails.User
+                                .withUsername(user.getEmail())
+                                .password(user.getPassword())
+                                .authorities(authorities)
+                                .build();
+        }
 }

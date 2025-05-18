@@ -18,7 +18,8 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    // Chỉ admin có thể lấy danh sách người dùng
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<UserResponse> getAllUsers(
             @RequestParam(defaultValue = "0") Integer pageNumber,
@@ -28,25 +29,30 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers(pageNumber, pageSize, sortBy, sortOrder));
     }
 
-    @PreAuthorize("hasRole('ADMIN') or authentication.name == #email")
+    // Admin hoặc chính người dùng có thể lấy thông tin theo ID
+    @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.name == #email")
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+        UserDTO userDTO = userService.getUserById(id);
+        return ResponseEntity.ok(userDTO);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or authentication.name == #email")
+    // Admin hoặc chính người dùng có thể lấy thông tin theo email
+    @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.name == #email")
     @GetMapping("/email/{email}")
     public ResponseEntity<UserDTO> getUserByEmail(@PathVariable String email) {
         return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 
-    @PreAuthorize("hasRole('ADMIN') or authentication.name == #userDTO.email")
+    // Admin hoặc chính người dùng có thể cập nhật thông tin
+    @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.name == #userDTO.email")
     @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @ModelAttribute UserDTO userDTO) {
         return ResponseEntity.ok(userService.updateUser(id, userDTO));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    // Chỉ admin có thể xóa người dùng
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.deleteUser(id));

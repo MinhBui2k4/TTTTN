@@ -8,7 +8,6 @@ import com.techstore.vanminh.security.JwtUtil;
 import com.techstore.vanminh.service.UserService;
 
 import io.jsonwebtoken.security.WeakKeyException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -68,15 +67,10 @@ public class AuthController {
                         "Không tìm thấy dữ liệu người dùng cho email: " + loginRequest.getEmail());
             }
 
-            // Tạo JWT token
-            // String token = jwtUtil.generateToken(loginRequest.getEmail());
-
-            // Lấy danh sách vai trò
+            // Tạo JWT token với roles
             List<String> roles = userDTO.getRoles() != null
                     ? userDTO.getRoles().stream().map(RoleDTO::getName).toList()
                     : List.of();
-
-            // Tạo JWT token (có chứa roles)
             String token = jwtUtil.generateToken(loginRequest.getEmail(), roles);
 
             // Tạo phản hồi
