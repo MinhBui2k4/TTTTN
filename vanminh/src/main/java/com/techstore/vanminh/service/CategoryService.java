@@ -1,7 +1,9 @@
 package com.techstore.vanminh.service;
 
+import com.techstore.vanminh.dto.BrandDTO;
 import com.techstore.vanminh.dto.CategoryDTO;
-import org.springframework.data.domain.Page;
+import com.techstore.vanminh.dto.response.BaseResponse;
+
 import org.springframework.data.domain.Pageable;
 
 public interface CategoryService {
@@ -9,7 +11,7 @@ public interface CategoryService {
 
     CategoryDTO getCategoryById(Long id);
 
-    Page<CategoryDTO> getAllCategories(Pageable pageable);
+    BaseResponse<CategoryDTO> getAllCategories(int pageNumber, int pageSize, String sortBy, String sortOrder);
 
     CategoryDTO updateCategory(Long id, CategoryDTO categoryDTO);
 

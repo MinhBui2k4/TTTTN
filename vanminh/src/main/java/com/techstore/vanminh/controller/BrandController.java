@@ -1,9 +1,9 @@
 package com.techstore.vanminh.controller;
 
 import com.techstore.vanminh.dto.BrandDTO;
+import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.service.BrandService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,8 +30,12 @@ public class BrandController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<BrandDTO>> getAllBrands(Pageable pageable) {
-        return ResponseEntity.ok(brandService.getAllBrands(pageable));
+    public ResponseEntity<BaseResponse<BrandDTO>> getAllBrands(
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+        return ResponseEntity.ok(brandService.getAllBrands(pageNumber, pageSize, sortBy, sortOrder));
     }
 
     @PutMapping("/{id}")

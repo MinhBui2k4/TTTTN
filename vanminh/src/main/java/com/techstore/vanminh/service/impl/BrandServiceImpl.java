@@ -1,15 +1,22 @@
 package com.techstore.vanminh.service.impl;
 
 import com.techstore.vanminh.dto.BrandDTO;
+import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.entity.Brand;
 import com.techstore.vanminh.exception.BadRequestException;
 import com.techstore.vanminh.exception.ResourceNotFoundException;
 import com.techstore.vanminh.repository.BrandRepository;
 import com.techstore.vanminh.service.BrandService;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,9 +48,28 @@ public class BrandServiceImpl implements BrandService {
     }
 
     @Override
-    public Page<BrandDTO> getAllBrands(Pageable pageable) {
-        Page<Brand> brands = brandRepository.findAll(pageable);
-        return brands.map(brand -> modelMapper.map(brand, BrandDTO.class));
+    public BaseResponse<BrandDTO> getAllBrands(int pageNumber, int pageSize, String sortBy, String sortOrder) {
+        Sort sort = sortOrder.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+
+        Page<Brand> brandPage = brandRepository.findAll(pageable);
+
+        List<BrandDTO> brandDTOs = brandPage.getContent().stream()
+                .map(brand -> modelMapper.map(brand, BrandDTO.class))
+                .collect(Collectors.toList());
+
+        BaseResponse<BrandDTO> response = new BaseResponse<>();
+        response.setContent(brandDTOs);
+        response.setPageNumber(brandPage.getNumber());
+        response.setPageSize(brandPage.getSize());
+        response.setTotalElements(brandPage.getTotalElements());
+        response.setTotalPages(brandPage.getTotalPages());
+        response.setLastPage(brandPage.isLast());
+
+        return response;
     }
 
     @Override

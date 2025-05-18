@@ -4,6 +4,7 @@ import com.techstore.vanminh.dto.AddressDTO;
 import com.techstore.vanminh.dto.CartDTO;
 import com.techstore.vanminh.dto.RegisterDTO;
 import com.techstore.vanminh.dto.UserDTO;
+import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.dto.response.UserResponse;
 import com.techstore.vanminh.entity.Address;
 import com.techstore.vanminh.entity.Cart;
@@ -93,7 +94,14 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         }
 
-        if (userDTO.getAddresses() != null) {
+        // 1
+        // if (userDTO.getAddresses() != null) {
+        // user.setAddresses(userDTO.getAddresses().stream()
+        // .map(dto -> modelMapper.map(dto, Address.class))
+        // .collect(Collectors.toList()));
+        // }
+
+        if (userDTO.getAddresses() != null && !userDTO.getAddresses().isEmpty()) {
             user.setAddresses(userDTO.getAddresses().stream()
                     .map(dto -> modelMapper.map(dto, Address.class))
                     .collect(Collectors.toList()));
@@ -214,4 +222,5 @@ public class UserServiceImpl implements UserService {
 
         return response;
     }
+
 }

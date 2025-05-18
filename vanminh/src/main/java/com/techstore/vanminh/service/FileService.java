@@ -11,5 +11,11 @@ public interface FileService {
 
     String uploadAvatar(String path, MultipartFile file, Long userId) throws IOException;
 
+    String uploadImgNews(String path, MultipartFile file) throws IOException;
+
+    String uploadImgProduct(String path, MultipartFile file) throws IOException;
+
+    String uploadImgProducts(String path, MultipartFile file) throws IOException;
+
     InputStream getResource(String path, String fileName) throws FileNotFoundException;
 }

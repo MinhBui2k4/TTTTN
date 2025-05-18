@@ -1,6 +1,8 @@
 package com.techstore.vanminh.controller;
 
+import com.techstore.vanminh.dto.BrandDTO;
 import com.techstore.vanminh.dto.CategoryDTO;
+import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -30,8 +32,12 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<CategoryDTO>> getAllCategories(Pageable pageable) {
-        return ResponseEntity.ok(categoryService.getAllCategories(pageable));
+    public ResponseEntity<BaseResponse<CategoryDTO>> getAllCategories(
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+        return ResponseEntity.ok(categoryService.getAllCategories(pageNumber, pageSize, sortBy, sortOrder));
     }
 
     @PutMapping("/{id}")

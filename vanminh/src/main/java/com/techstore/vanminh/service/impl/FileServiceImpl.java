@@ -23,29 +23,37 @@ public class FileServiceImpl implements FileService {
     public String uploadImage(String path, MultipartFile file) throws IOException {
         String originalFileName = file.getOriginalFilename();
         String randomId = UUID.randomUUID().toString();
-        String fileName = randomId.concat(originalFileName.substring(originalFileName.lastIndexOf('.')));
-        String filePath = path + File.separator + fileName;
-        File folder = new File(path);
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
-        Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
-
-        return fileName;
+        String fileName = randomId.concat(getFileExtension(originalFileName));
+        return saveFile(path, file, fileName);
     }
 
     @Override
     public String uploadAvatar(String path, MultipartFile file, Long userId) throws IOException {
-        String originalFileName = file.getOriginalFilename();
         String date = new SimpleDateFormat("ddMMyyyy").format(new Date());
-        String fileName = "a-" + (userId != null ? userId : "new") + "-" + date + getFileExtension(originalFileName);
-        String filePath = path + File.separator + fileName;
-        File folder = new File(path);
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
-        Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
-        return fileName;
+        String fileName = "a-" + (userId != null ? userId : "new") + "-" + date
+                + getFileExtension(file.getOriginalFilename());
+        return saveFile(path, file, fileName);
+    }
+
+    @Override
+    public String uploadImgNews(String path, MultipartFile file) throws IOException {
+        String date = new SimpleDateFormat("ddMMyyyy").format(new Date());
+        String fileName = "n-" + date + getFileExtension(file.getOriginalFilename());
+        return saveFile(path, file, fileName);
+    }
+
+    @Override
+    public String uploadImgProduct(String path, MultipartFile file) throws IOException {
+        String date = new SimpleDateFormat("ddMMyyyy").format(new Date());
+        String fileName = "p-" + date + getFileExtension(file.getOriginalFilename());
+        return saveFile(path, file, fileName);
+    }
+
+    @Override
+    public String uploadImgProducts(String path, MultipartFile file) throws IOException {
+        String date = new SimpleDateFormat("ddMMyyyy").format(new Date());
+        String fileName = "ps-" + date + getFileExtension(file.getOriginalFilename());
+        return saveFile(path, file, fileName);
     }
 
     @Override
@@ -54,10 +62,20 @@ public class FileServiceImpl implements FileService {
         return new FileInputStream(filePath);
     }
 
+    private String saveFile(String path, MultipartFile file, String fileName) throws IOException {
+        File folder = new File(path);
+        if (!folder.exists()) {
+            folder.mkdirs();
+        }
+        String filePath = path + File.separator + fileName;
+        Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+        return fileName;
+    }
+
     private String getFileExtension(String fileName) {
-        if (fileName == null || fileName.lastIndexOf(".") == -1) {
+        if (fileName == null || !fileName.contains(".")) {
             return "";
         }
-        return fileName.substring(fileName.lastIndexOf("."));
+        return fileName.substring(fileName.lastIndexOf(".")).toLowerCase(); // always lowercase
     }
 }
