@@ -57,4 +57,18 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         return ResponseEntity.ok(userService.deleteUser(id));
     }
+
+    // Người dùng đã đăng nhập có thể lấy profile của chính họ
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/profile")
+    public ResponseEntity<UserDTO> getProfile() {
+        // Lấy email từ người dùng đã đăng nhập
+        String currentEmail = org.springframework.security.core.context.SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        UserDTO userDTO = userService.getUserByEmail(currentEmail);
+        return ResponseEntity.ok(userDTO);
+    }
 }
