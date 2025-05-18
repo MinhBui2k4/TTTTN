@@ -11,4 +11,6 @@ import com.techstore.vanminh.entity.Role.RoleName;
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Long> {
     Optional<Role> findByName(RoleName name);
+
+    Optional<Role> findById(Long id);
 }

@@ -1,33 +1,18 @@
 package com.techstore.vanminh.service;
 
+import com.techstore.vanminh.dto.RoleDTO;
+
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+public interface RoleService {
 
-import com.techstore.vanminh.entity.Role;
-import com.techstore.vanminh.repository.RoleRepository;
+    List<RoleDTO> getAllRoles();
 
-@Service
-public class RoleService {
+    RoleDTO getRoleById(Long id);
 
-    @Autowired
-    private RoleRepository roleRepository;
+    RoleDTO saveRole(RoleDTO roleDTO);
 
-    public List<Role> getAllRoles() {
-        return roleRepository.findAll();
-    }
+    RoleDTO updateRole(Long id, RoleDTO roleDTO);
 
-    public Role getRoleById(Long id) {
-        return roleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
-    }
-
-    public Role saveRole(Role role) {
-        return roleRepository.save(role);
-    }
-
-    public void deleteRole(Long id) {
-        roleRepository.deleteById(id);
-    }
+    void deleteRole(Long id);
 }
