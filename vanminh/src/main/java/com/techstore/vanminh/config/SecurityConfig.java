@@ -40,7 +40,8 @@ public class SecurityConfig {
 
         // Endpoints only for ADMIN
         private static final String[] ADMIN_ENDPOINTS = {
-                        "/api/admin/**"
+                        "/api/admin/**",
+                        "/api/categories/**"
         };
 
         // Endpoints for both ADMIN and USER

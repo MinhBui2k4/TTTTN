@@ -40,7 +40,9 @@ public class Product {
 
     private Integer maxQuantity;
 
-    private String category;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category; // Thay trường category (String) bằng Category entity
 
     private String brand;
 
