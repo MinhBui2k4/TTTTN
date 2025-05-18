@@ -1,7 +1,5 @@
 package com.techstore.vanminh.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,8 +14,6 @@ public class Address {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonBackReference
-
     private User user;
 
     @Column(nullable = false)
@@ -35,12 +31,7 @@ public class Address {
 
     private String province;
 
+    private String type;
+
     private boolean isDefault;
-
-    @Enumerated(EnumType.STRING)
-    private AddressType type;
-
-    public enum AddressType {
-        HOME, OFFICE
-    }
 }

@@ -1,13 +1,15 @@
 package com.techstore.vanminh.dto;
 
 import lombok.Data;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.*;
 
 @Data
 public class AddressDTO {
     private Long id;
 
-    @NotBlank(message = "Tên không được để trống")
+    private Long userId;
+
+    @NotBlank(message = "Tên người nhận không được để trống")
     private String name;
 
     @NotBlank(message = "Số điện thoại không được để trống")
@@ -22,7 +24,7 @@ public class AddressDTO {
 
     private String province;
 
-    private boolean isDefault;
+    private String type; // Ví dụ: "HOME", "OFFICE"
 
-    private String type; // HOME, OFFICE
+    private boolean isDefault;
 }

@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 public class OrderTimelineDTO {
     private Long id;
     private Long orderId;
-    private String status;
+    private String status; // Order.OrderStatus as String
     private LocalDateTime date;
     private String description;
 }
