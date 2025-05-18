@@ -14,22 +14,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.UUID;
 
 @Service
 public class FileServiceImpl implements FileService {
 
     @Override
-    public String uploadImage(String path, MultipartFile file) throws IOException {
-        String originalFileName = file.getOriginalFilename();
-        String randomId = UUID.randomUUID().toString();
-        String fileName = randomId.concat(getFileExtension(originalFileName));
-        return saveFile(path, file, fileName);
-    }
-
-    @Override
     public String uploadAvatar(String path, MultipartFile file, Long userId) throws IOException {
-        String date = new SimpleDateFormat("ddMMyyyy").format(new Date());
+        String date = new SimpleDateFormat("ddMMyyyy-HHmmss").format(new Date());
         String fileName = "a-" + (userId != null ? userId : "new") + "-" + date
                 + getFileExtension(file.getOriginalFilename());
         return saveFile(path, file, fileName);
@@ -37,22 +28,23 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String uploadImgNews(String path, MultipartFile file) throws IOException {
-        String date = new SimpleDateFormat("ddMMyyyy").format(new Date());
+        String date = new SimpleDateFormat("ddMMyyyy-HHmmss").format(new Date());
         String fileName = "n-" + date + getFileExtension(file.getOriginalFilename());
         return saveFile(path, file, fileName);
     }
 
     @Override
     public String uploadImgProduct(String path, MultipartFile file) throws IOException {
-        String date = new SimpleDateFormat("ddMMyyyy").format(new Date());
+        String date = new SimpleDateFormat("ddMMyyyy-HHmmss").format(new Date());
         String fileName = "p-" + date + getFileExtension(file.getOriginalFilename());
         return saveFile(path, file, fileName);
     }
 
     @Override
-    public String uploadImgProducts(String path, MultipartFile file) throws IOException {
-        String date = new SimpleDateFormat("ddMMyyyy").format(new Date());
-        String fileName = "ps-" + date + getFileExtension(file.getOriginalFilename());
+    public String uploadImgProducts(String path, MultipartFile file, int index) throws IOException {
+        String date = new SimpleDateFormat("ddMMyyyyHHmmss").format(new Date());
+        String extension = getFileExtension(file.getOriginalFilename());
+        String fileName = "ps-" + date + "-" + index + extension;
         return saveFile(path, file, fileName);
     }
 

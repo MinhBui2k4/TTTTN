@@ -2,12 +2,14 @@ package com.techstore.vanminh.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.util.List;
 
 @Entity
 @Table(name = "products")
 @Data
-
+@Getter
+@Setter
 @NoArgsConstructor
 public class Product {
     @Id
@@ -27,8 +29,6 @@ public class Product {
 
     private Double rating;
 
-    private Integer reviews;
-
     private String image;
 
     @ElementCollection
@@ -38,30 +38,17 @@ public class Product {
 
     private boolean isSale;
 
-    private Integer maxQuantity;
+    private Integer quantity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    private Category category; // Thay trường category (String) bằng Category entity
+    private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
-    private Brand brand; // Thay trường brand (String) bằng Brand entity
+    private Brand brand;
 
     private String sku;
 
-    private String availability;
-
-    @ElementCollection
-    @CollectionTable(name = "product_specifications")
-    private List<Specification> specifications;
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductVariant> variants;
-
-    @Embeddable
-    public static class Specification {
-        private String name;
-        private String value;
-    }
+    private boolean availability;
 }

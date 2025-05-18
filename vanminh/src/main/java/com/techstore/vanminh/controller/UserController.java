@@ -1,7 +1,7 @@
 package com.techstore.vanminh.controller;
 
 import com.techstore.vanminh.dto.UserDTO;
-import com.techstore.vanminh.dto.response.UserResponse;
+import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -21,7 +21,7 @@ public class UserController {
     // Chỉ admin có thể lấy danh sách người dùng
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping
-    public ResponseEntity<UserResponse> getAllUsers(
+    public ResponseEntity<BaseResponse<UserDTO>> getAllUsers(
             @RequestParam(defaultValue = "0") Integer pageNumber,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(defaultValue = "id") String sortBy,
@@ -55,7 +55,7 @@ public class UserController {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.deleteUser(id));
+        return ResponseEntity.ok("Đã xóa người dùng với ID: " + id);
     }
 
     // Người dùng đã đăng nhập có thể lấy profile của chính họ

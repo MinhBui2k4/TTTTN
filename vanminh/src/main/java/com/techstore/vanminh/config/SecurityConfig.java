@@ -31,11 +31,11 @@ public class SecurityConfig {
         private static final String[] PUBLIC_ENDPOINTS = {
                         "/api/auth/**",
                         "/api/products/**",
-                        "/api/roles/**",
                         "/v3/api-docs/**",
                         "/swagger-ui/**",
                         "/swagger-ui.html",
-                        "/webjars/**"
+                        "/webjars/**",
+                        "/api/admin/roles/**",
         };
 
         // Endpoints only for ADMIN
@@ -43,12 +43,14 @@ public class SecurityConfig {
                         "/api/admin/**",
                         "/api/admin/categories/**",
                         "/api/admin/brands/**",
+                        // "/api/admin/roles/**",
 
         };
 
         // Endpoints for both ADMIN and USER
         private static final String[] ADMIN_USER_ENDPOINTS = {
-                        "/api/users/**"
+                        "/api/users/**",
+                        "/api/users/cart/**"
         };
 
         @Bean

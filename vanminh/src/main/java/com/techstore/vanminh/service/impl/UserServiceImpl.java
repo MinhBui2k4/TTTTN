@@ -5,7 +5,6 @@ import com.techstore.vanminh.dto.CartDTO;
 import com.techstore.vanminh.dto.RegisterDTO;
 import com.techstore.vanminh.dto.UserDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
-import com.techstore.vanminh.dto.response.UserResponse;
 import com.techstore.vanminh.entity.Address;
 import com.techstore.vanminh.entity.Cart;
 import com.techstore.vanminh.entity.Role;
@@ -84,7 +83,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO updateUser(Long userId, UserDTO userDTO) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy với id: " + userId));
 
         user.setFullName(userDTO.getFullName());
         user.setEmail(userDTO.getEmail());
@@ -94,14 +93,7 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         }
 
-        // 1
-        // if (userDTO.getAddresses() != null) {
-        // user.setAddresses(userDTO.getAddresses().stream()
-        // .map(dto -> modelMapper.map(dto, Address.class))
-        // .collect(Collectors.toList()));
-        // }
-
-        if (userDTO.getAddresses() != null && !userDTO.getAddresses().isEmpty()) {
+        if (userDTO.getAddresses() != null) {
             user.setAddresses(userDTO.getAddresses().stream()
                     .map(dto -> modelMapper.map(dto, Address.class))
                     .collect(Collectors.toList()));
@@ -113,13 +105,12 @@ public class UserServiceImpl implements UserService {
             user.setCart(cart);
         }
 
-        // Handle avatar upload
         if (userDTO.getAvatarFile() != null && !userDTO.getAvatarFile().isEmpty()) {
             try {
                 String fileName = fileService.uploadAvatar(avatarPath, userDTO.getAvatarFile(), userId);
                 user.setAvatarUrl(fileName);
             } catch (IOException e) {
-                throw new BadRequestException("Failed to upload avatar: " + e.getMessage());
+                throw new BadRequestException("Không thể tải lên avatar: " + e.getMessage());
             }
         }
 
@@ -188,7 +179,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse getAllUsers(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+    public BaseResponse<UserDTO> getAllUsers(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         Sort sort = sortOrder.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
                 : Sort.by(sortBy).ascending();
@@ -212,7 +203,7 @@ public class UserServiceImpl implements UserService {
                 })
                 .collect(Collectors.toList());
 
-        UserResponse response = new UserResponse();
+        BaseResponse<UserDTO> response = new BaseResponse<>();
         response.setContent(userDTOs);
         response.setPageNumber(userPage.getNumber());
         response.setPageSize(userPage.getSize());

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping("/api/admin/roles")
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 public class RoleController {
 
@@ -38,8 +38,9 @@ public class RoleController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRole(@PathVariable Long id) {
+    public ResponseEntity<String> deleteRole(@PathVariable Long id) {
         roleService.deleteRole(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Đã xóa quyền với ID: " + id);
     }
+
 }

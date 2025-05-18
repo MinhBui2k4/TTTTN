@@ -33,4 +33,8 @@ build/
 .vscode/
 
 # secret
-aplication/
+/aplication/
+
+# upload hình ảnh
+
+/uploads/
