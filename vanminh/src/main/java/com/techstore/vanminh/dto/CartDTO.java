@@ -9,4 +9,5 @@ public class CartDTO {
     private Long id;
     private Long userId;
     private List<CartItemDTO> items;
+    private Double totalCartPrice;
 }

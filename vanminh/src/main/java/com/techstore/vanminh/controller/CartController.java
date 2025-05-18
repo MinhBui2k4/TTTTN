@@ -2,7 +2,11 @@ package com.techstore.vanminh.controller;
 
 import com.techstore.vanminh.dto.CartDTO;
 import com.techstore.vanminh.dto.CartItemDTO;
+import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.service.CartService;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,43 +22,36 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    // @GetMapping
-    // public ResponseEntity<BaseResponse<CartItemDTO>> getCart(
-    // @RequestParam(defaultValue = "0") int pageNumber,
-    // @RequestParam(defaultValue = "10") int pageSize,
-    // @RequestParam(defaultValue = "id") String sortBy,
-    // @RequestParam(defaultValue = "asc") String sortOrder) {
-    // BaseResponse<CartItemDTO> response = cartService.getCart(pageNumber,
-    // pageSize, sortBy, sortOrder);
-    // return ResponseEntity.ok(response);
-    // }
-
     @GetMapping
-    public ResponseEntity<CartDTO> getCart() {
+    public ResponseEntity<BaseResponse<CartDTO>> getCart() {
         return ResponseEntity.ok(cartService.getCart());
     }
 
     @PostMapping("/items")
-    public ResponseEntity<CartDTO> addItemToCart(@Valid @RequestBody CartItemDTO cartItemDTO) {
+    public ResponseEntity<BaseResponse<CartDTO>> addItemToCart(@Valid @RequestBody CartItemDTO cartItemDTO) {
         return ResponseEntity.ok(cartService.addItemToCart(cartItemDTO));
     }
 
     @PutMapping("/items/{itemId}")
-    public ResponseEntity<CartDTO> updateCartItem(@PathVariable Long itemId,
+    public ResponseEntity<BaseResponse<CartDTO>> updateCartItem(@PathVariable Long itemId,
             @Valid @RequestBody CartItemDTO cartItemDTO) {
         return ResponseEntity.ok(cartService.updateCartItem(itemId, cartItemDTO));
     }
 
     @DeleteMapping("/items/{itemId}")
-    public ResponseEntity<String> removeItemFromCart(@PathVariable Long itemId) {
-        cartService.removeItemFromCart(itemId);
-        return ResponseEntity.ok("Đã xóa sản phẩm khỏi giỏ hàng với ID: " + itemId);
+    public ResponseEntity<BaseResponse<CartDTO>> removeItemFromCart(@PathVariable Long itemId) {
+        BaseResponse<CartDTO> response = cartService.removeItemFromCart(itemId);
+        response.setMessage("Xóa sản phẩm khỏi giỏ hàng thành công.");
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping
-    public ResponseEntity<String> clearCart() {
+    public ResponseEntity<BaseResponse<String>> clearCart() {
         cartService.clearCart();
-        return ResponseEntity.ok("Đã xóa toàn bộ giỏ hàng.");
+        BaseResponse<String> response = new BaseResponse<>();
+        response.setMessage("Đã xóa toàn bộ giỏ hàng.");
+        response.setContent(List.of("OK"));
+        return ResponseEntity.ok(response);
     }
 
 }
