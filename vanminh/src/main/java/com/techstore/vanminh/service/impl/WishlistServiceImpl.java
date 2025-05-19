@@ -93,7 +93,7 @@ public class WishlistServiceImpl implements WishlistService {
     }
 
     @Override
-    public BaseResponse<WishlistItemDTO> getWishlist() {
+    public BaseResponse<WishlistItemDTO> getWishlist(int pageNumber, int pageSize) {
         User user = getCurrentUser();
 
         Wishlist wishlist = wishlistRepository.findByUserId(user.getId())
@@ -104,8 +104,14 @@ public class WishlistServiceImpl implements WishlistService {
                     return wishlistRepository.save(newWishlist);
                 });
 
-        BaseResponse<WishlistItemDTO> response = new BaseResponse<>();
-        response.setContent(wishlist.getItems().stream()
+        List<WishlistItem> allItems = wishlist.getItems();
+        int totalElements = allItems.size();
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+
+        int fromIndex = Math.min(pageNumber * pageSize, totalElements);
+        int toIndex = Math.min(fromIndex + pageSize, totalElements);
+
+        List<WishlistItemDTO> pageContent = allItems.subList(fromIndex, toIndex).stream()
                 .map(item -> {
                     WishlistItemDTO itemDTO = modelMapper.map(item, WishlistItemDTO.class);
                     itemDTO.setProductName(item.getProduct().getName());
@@ -113,7 +119,14 @@ public class WishlistServiceImpl implements WishlistService {
                     itemDTO.setAvailability(item.getProduct().isAvailability());
                     return itemDTO;
                 })
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+
+        BaseResponse<WishlistItemDTO> response = new BaseResponse<>();
+        response.setContent(pageContent);
+        response.setPageNumber(pageNumber);
+        response.setPageSize(pageSize);
+        response.setTotalPages(totalPages);
+        response.setLastPage(pageNumber >= totalPages - 1);
         return response;
     }
 
@@ -145,14 +158,14 @@ public class WishlistServiceImpl implements WishlistService {
     }
 
     @Override
+    @Transactional
     public void clearWishlist() {
         User user = getCurrentUser();
 
         Wishlist wishlist = wishlistRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Danh sách yêu thích không tìm thấy"));
 
-        wishlistItemRepository.deleteAll(wishlist.getItems());
-        wishlist.setItems(new ArrayList<>());
-        wishlistRepository.save(wishlist);
+        wishlist.getItems().clear();
     }
+
 }

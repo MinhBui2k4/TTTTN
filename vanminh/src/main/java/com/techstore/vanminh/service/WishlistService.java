@@ -6,7 +6,7 @@ import com.techstore.vanminh.dto.response.BaseResponse;
 public interface WishlistService {
     BaseResponse<WishlistItemDTO> addItemToWishlist(WishlistItemDTO wishlistItemDTO);
 
-    BaseResponse<WishlistItemDTO> getWishlist();
+    BaseResponse<WishlistItemDTO> getWishlist(int pageNumber, int pageSize);
 
     BaseResponse<WishlistItemDTO> removeItemFromWishlist(Long productId);
 

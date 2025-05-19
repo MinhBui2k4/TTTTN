@@ -35,7 +35,8 @@ public class SecurityConfig {
                         "/swagger-ui/**",
                         "/swagger-ui.html",
                         "/webjars/**",
-                        "/api/admin/roles/**",
+                        "/api/contacts/**",
+                        // "/api/admin/roles/**",
         };
 
         // Endpoints only for ADMIN
@@ -43,7 +44,8 @@ public class SecurityConfig {
                         "/api/admin/**",
                         "/api/admin/categories/**",
                         "/api/admin/brands/**",
-                        // "/api/admin/roles/**",
+                        "/api/admin/roles/**",
+                        "/api/admin/payment-methods/**",
 
         };
 
@@ -52,7 +54,8 @@ public class SecurityConfig {
                         "/api/users/**",
                         "/api/users/cart/**",
                         "/api/users/addresses/**",
-                        "/api/orders"
+                        "/api/orders/**",
+                        "/api/users/wishlist/**",
         };
 
         @Bean
