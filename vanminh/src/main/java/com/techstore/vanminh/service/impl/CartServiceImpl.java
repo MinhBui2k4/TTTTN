@@ -15,8 +15,6 @@ import com.techstore.vanminh.repository.ProductRepository;
 import com.techstore.vanminh.repository.UserRepository;
 import com.techstore.vanminh.service.CartService;
 import com.techstore.vanminh.util.CartMapper;
-
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -43,34 +41,7 @@ public class CartServiceImpl implements CartService {
     private UserRepository userRepository;
 
     @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
     private CartMapper cartMapper;
-
-    private CartDTO mapToCartDTO(Cart cart) {
-        CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
-        List<CartItemDTO> itemDTOs = new ArrayList<>();
-        double totalCartPrice = 0.0;
-
-        // Kiểm tra items không null và khởi tạo nếu cần
-        if (cart.getItems() == null) {
-            cart.setItems(new ArrayList<>());
-        }
-
-        for (CartItem item : cart.getItems()) {
-            CartItemDTO itemDTO = modelMapper.map(item, CartItemDTO.class);
-            itemDTO.setProductName(item.getProduct().getName());
-            itemDTO.setProductPrice(item.getProduct().getPrice());
-            itemDTO.setTotalPrice(item.getProduct().getPrice() * item.getQuantity());
-            itemDTOs.add(itemDTO);
-            totalCartPrice += itemDTO.getTotalPrice();
-        }
-
-        cartDTO.setItems(itemDTOs);
-        cartDTO.setTotalCartPrice(totalCartPrice);
-        return cartDTO;
-    }
 
     @Override
     public BaseResponse<CartDTO> getCart() {
@@ -105,12 +76,16 @@ public class CartServiceImpl implements CartService {
                     return cartRepository.save(newCart);
                 });
 
+        if (cartItemDTO.getProductId() == null) {
+            throw new BadRequestException("Product ID không được để trống");
+        }
+
         Product product = productRepository.findById(cartItemDTO.getProductId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Sản phẩm không tìm thấy với id: " + cartItemDTO.getProductId()));
 
         if (!product.isAvailability()) {
-            throw new BadRequestException("Sản phẩm hiện không có sẵn");
+            throw new BadRequestException("Sản phẩm " + product.getName() + " hiện không có sẵn");
         }
 
         if (cartItemDTO.getQuantity() <= 0 || cartItemDTO.getQuantity() > product.getQuantity()) {
@@ -138,6 +113,7 @@ public class CartServiceImpl implements CartService {
 
         BaseResponse<CartDTO> response = new BaseResponse<>();
         response.setContent(List.of(cartMapper.mapToCartDTO(cart)));
+        response.setMessage("Thêm sản phẩm vào giỏ hàng thành công.");
         return response;
     }
 
@@ -148,7 +124,7 @@ public class CartServiceImpl implements CartService {
 
         Product product = cartItem.getProduct();
         if (!product.isAvailability()) {
-            throw new BadRequestException("Sản phẩm hiện không có sẵn");
+            throw new BadRequestException("Sản phẩm " + product.getName() + " hiện không có sẵn");
         }
 
         if (cartItemDTO.getQuantity() <= 0 || cartItemDTO.getQuantity() > product.getQuantity()) {
@@ -192,5 +168,4 @@ public class CartServiceImpl implements CartService {
         cart.setItems(new ArrayList<>());
         cartRepository.save(cart);
     }
-
 }
