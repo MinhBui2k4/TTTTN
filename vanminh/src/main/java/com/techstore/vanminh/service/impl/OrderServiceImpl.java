@@ -1,8 +1,6 @@
 package com.techstore.vanminh.service.impl;
 
 import com.techstore.vanminh.dto.OrderDTO;
-import com.techstore.vanminh.dto.OrderItemDTO;
-import com.techstore.vanminh.dto.OrderTimelineDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.entity.*;
 import com.techstore.vanminh.exception.BadRequestException;
@@ -51,6 +49,9 @@ public class OrderServiceImpl implements OrderService {
     private AddressRepository addressRepository;
 
     @Autowired
+    private PaymentMethodRepository paymentMethodRepository;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     @Override
@@ -70,12 +71,16 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Địa chỉ giao hàng không tìm thấy với id: " + orderDTO.getShippingAddressId()));
 
+        PaymentMethod paymentMethod = paymentMethodRepository.findById(orderDTO.getPaymentMethodId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Phương thức thanh toán không tìm thấy với id: " + orderDTO.getPaymentMethodId()));
+
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
         order.setStatus(Order.OrderStatus.ORDERED);
         order.setShippingAddress(shippingAddress);
-        order.setPaymentMethod(orderDTO.getPaymentMethod());
+        order.setPaymentMethod(paymentMethod);
         order.setShippingCost(orderDTO.getShippingCost() != null ? orderDTO.getShippingCost() : 0.0);
 
         List<OrderItem> orderItems = new ArrayList<>();

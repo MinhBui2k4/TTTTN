@@ -9,10 +9,10 @@ public class OrderDTO {
     private Long id;
     private Long userId;
     private LocalDateTime orderDate;
-    private String status; // Order.OrderStatus as String
+    private String status;
     private Double total;
     private Double shippingCost;
-    private String paymentMethod;
+    private Long paymentMethodId;
     private Long shippingAddressId;
     private List<OrderItemDTO> items;
     private List<OrderTimelineDTO> timeline;

@@ -28,7 +28,9 @@ public class Order {
 
     private Double shippingCost;
 
-    private String paymentMethod;
+    @ManyToOne
+    @JoinColumn(name = "payment_method_id", nullable = false)
+    private PaymentMethod paymentMethod; // Thay String paymentMethod
 
     @ManyToOne
     @JoinColumn(name = "address_id", nullable = false)
