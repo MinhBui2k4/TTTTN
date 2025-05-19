@@ -49,6 +49,11 @@ public class CartServiceImpl implements CartService {
         List<CartItemDTO> itemDTOs = new ArrayList<>();
         double totalCartPrice = 0.0;
 
+        // Kiểm tra items không null và khởi tạo nếu cần
+        if (cart.getItems() == null) {
+            cart.setItems(new ArrayList<>());
+        }
+
         for (CartItem item : cart.getItems()) {
             CartItemDTO itemDTO = modelMapper.map(item, CartItemDTO.class);
             itemDTO.setProductName(item.getProduct().getName());
@@ -73,6 +78,7 @@ public class CartServiceImpl implements CartService {
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
                     newCart.setUser(user);
+                    newCart.setItems(new ArrayList<>()); // Khởi tạo items
                     return cartRepository.save(newCart);
                 });
 
@@ -91,6 +97,7 @@ public class CartServiceImpl implements CartService {
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
                     newCart.setUser(user);
+                    newCart.setItems(new ArrayList<>()); // Khởi tạo items
                     return cartRepository.save(newCart);
                 });
 
@@ -123,6 +130,7 @@ public class CartServiceImpl implements CartService {
             cartItem.setProduct(product);
             cartItem.setQuantity(cartItemDTO.getQuantity());
             cartItemRepository.save(cartItem);
+            cart.getItems().add(cartItem); // Cập nhật danh sách items
         }
 
         BaseResponse<CartDTO> response = new BaseResponse<>();
@@ -153,15 +161,13 @@ public class CartServiceImpl implements CartService {
         return response;
     }
 
-    // @Override
+    @Override
     public BaseResponse<CartDTO> removeItemFromCart(Long itemId) {
         CartItem cartItem = cartItemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mục giỏ hàng không tìm thấy với id: " + itemId));
 
         Cart cart = cartItem.getCart();
-
         cart.getItems().remove(cartItem);
-
         cartItemRepository.delete(cartItem);
 
         BaseResponse<CartDTO> response = new BaseResponse<>();
@@ -180,7 +186,7 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("Giỏ hàng không tìm thấy"));
 
         cartItemRepository.deleteAll(cart.getItems());
-        cart.getItems().clear();
+        cart.setItems(new ArrayList<>()); // Đảm bảo items rỗng
         cartRepository.save(cart);
     }
 }
