@@ -2,7 +2,6 @@ package com.techstore.vanminh.service;
 
 import com.techstore.vanminh.dto.ContactDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
-import org.springframework.data.domain.Pageable;
 
 public interface ContactService {
     ContactDTO createContact(ContactDTO contactDTO);

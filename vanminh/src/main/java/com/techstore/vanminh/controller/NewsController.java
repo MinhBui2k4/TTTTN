@@ -4,7 +4,6 @@ import com.techstore.vanminh.dto.NewsDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.service.NewsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

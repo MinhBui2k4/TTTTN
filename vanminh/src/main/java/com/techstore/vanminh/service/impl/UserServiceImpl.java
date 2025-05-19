@@ -15,7 +15,7 @@ import com.techstore.vanminh.repository.RoleRepository;
 import com.techstore.vanminh.repository.UserRepository;
 import com.techstore.vanminh.service.FileService;
 import com.techstore.vanminh.service.UserService;
-
+import com.techstore.vanminh.util.CartMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,6 +47,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private CartMapper cartMapper;
 
     @Value("${project.avatar.path}")
     private String avatarPath;
@@ -123,7 +127,7 @@ public class UserServiceImpl implements UserService {
                     .collect(Collectors.toList()));
         }
         if (updatedUser.getCart() != null) {
-            updatedUserDTO.setCart(modelMapper.map(updatedUser.getCart(), CartDTO.class));
+            updatedUserDTO.setCart(cartMapper.mapToCartDTO(updatedUser.getCart()));
         }
 
         return updatedUserDTO;
@@ -143,7 +147,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (user.getCart() != null) {
-            userDTO.setCart(modelMapper.map(user.getCart(), CartDTO.class));
+            userDTO.setCart(cartMapper.mapToCartDTO(user.getCart()));
         }
 
         return userDTO;
@@ -163,7 +167,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (user.getCart() != null) {
-            userDTO.setCart(modelMapper.map(user.getCart(), CartDTO.class));
+            userDTO.setCart(cartMapper.mapToCartDTO(user.getCart()));
         }
 
         return userDTO;
@@ -197,7 +201,7 @@ public class UserServiceImpl implements UserService {
                                 .collect(Collectors.toList()));
                     }
                     if (user.getCart() != null) {
-                        dto.setCart(modelMapper.map(user.getCart(), CartDTO.class));
+                        dto.setCart(cartMapper.mapToCartDTO(user.getCart()));
                     }
                     return dto;
                 })
@@ -213,5 +217,4 @@ public class UserServiceImpl implements UserService {
 
         return response;
     }
-
 }

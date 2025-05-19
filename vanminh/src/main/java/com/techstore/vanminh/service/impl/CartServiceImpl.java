@@ -14,6 +14,7 @@ import com.techstore.vanminh.repository.CartRepository;
 import com.techstore.vanminh.repository.ProductRepository;
 import com.techstore.vanminh.repository.UserRepository;
 import com.techstore.vanminh.service.CartService;
+import com.techstore.vanminh.util.CartMapper;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,9 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private CartMapper cartMapper;
 
     private CartDTO mapToCartDTO(Cart cart) {
         CartDTO cartDTO = modelMapper.map(cart, CartDTO.class);
@@ -78,12 +82,12 @@ public class CartServiceImpl implements CartService {
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
                     newCart.setUser(user);
-                    newCart.setItems(new ArrayList<>()); // Khởi tạo items
+                    newCart.setItems(new ArrayList<>());
                     return cartRepository.save(newCart);
                 });
 
         BaseResponse<CartDTO> response = new BaseResponse<>();
-        response.setContent(List.of(mapToCartDTO(cart)));
+        response.setContent(List.of(cartMapper.mapToCartDTO(cart)));
         return response;
     }
 
@@ -97,7 +101,7 @@ public class CartServiceImpl implements CartService {
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
                     newCart.setUser(user);
-                    newCart.setItems(new ArrayList<>()); // Khởi tạo items
+                    newCart.setItems(new ArrayList<>());
                     return cartRepository.save(newCart);
                 });
 
@@ -113,7 +117,6 @@ public class CartServiceImpl implements CartService {
             throw new BadRequestException("Số lượng không hợp lệ. Số lượng tối đa: " + product.getQuantity());
         }
 
-        // Kiểm tra xem sản phẩm đã có trong giỏ chưa
         Optional<CartItem> existingItem = cartItemRepository.findByCartIdAndProductId(cart.getId(),
                 cartItemDTO.getProductId());
         if (existingItem.isPresent()) {
@@ -130,11 +133,11 @@ public class CartServiceImpl implements CartService {
             cartItem.setProduct(product);
             cartItem.setQuantity(cartItemDTO.getQuantity());
             cartItemRepository.save(cartItem);
-            cart.getItems().add(cartItem); // Cập nhật danh sách items
+            cart.getItems().add(cartItem);
         }
 
         BaseResponse<CartDTO> response = new BaseResponse<>();
-        response.setContent(List.of(mapToCartDTO(cart)));
+        response.setContent(List.of(cartMapper.mapToCartDTO(cart)));
         return response;
     }
 
@@ -157,7 +160,7 @@ public class CartServiceImpl implements CartService {
 
         Cart cart = cartItem.getCart();
         BaseResponse<CartDTO> response = new BaseResponse<>();
-        response.setContent(List.of(mapToCartDTO(cart)));
+        response.setContent(List.of(cartMapper.mapToCartDTO(cart)));
         return response;
     }
 
@@ -172,7 +175,7 @@ public class CartServiceImpl implements CartService {
 
         BaseResponse<CartDTO> response = new BaseResponse<>();
         response.setMessage("Xóa sản phẩm khỏi giỏ hàng thành công.");
-        response.setContent(List.of(mapToCartDTO(cart)));
+        response.setContent(List.of(cartMapper.mapToCartDTO(cart)));
         return response;
     }
 
@@ -186,7 +189,7 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("Giỏ hàng không tìm thấy"));
 
         cartItemRepository.deleteAll(cart.getItems());
-        cart.getItems().clear();
+        cart.setItems(new ArrayList<>());
         cartRepository.save(cart);
     }
 
