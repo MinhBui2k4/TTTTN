@@ -42,7 +42,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public String uploadImgProducts(String path, MultipartFile file, int index) throws IOException {
-        String date = new SimpleDateFormat("ddMMyyyyHHmmss").format(new Date());
+        String date = new SimpleDateFormat("ddMMyyyy-HHmmss").format(new Date());
         String extension = getFileExtension(file.getOriginalFilename());
         String fileName = "ps-" + date + "-" + index + extension;
         return saveFile(path, file, fileName);

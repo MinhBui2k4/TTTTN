@@ -1,6 +1,8 @@
 package com.techstore.vanminh.service.impl;
 
 import com.techstore.vanminh.dto.OrderDTO;
+import com.techstore.vanminh.dto.OrderItemDTO;
+import com.techstore.vanminh.dto.OrderTimelineDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.entity.*;
 import com.techstore.vanminh.exception.BadRequestException;
@@ -67,9 +69,9 @@ public class OrderServiceImpl implements OrderService {
             throw new BadRequestException("Giỏ hàng trống");
         }
 
-        Address shippingAddress = addressRepository.findById(orderDTO.getShippingAddressId())
+        Address shippingAddress = addressRepository.findByIdAndUserId(orderDTO.getShippingAddressId(), user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Địa chỉ giao hàng không tìm thấy với id: " + orderDTO.getShippingAddressId()));
+                        "Địa chỉ giao hàng không tìm thấy hoặc không thuộc về bạn"));
 
         PaymentMethod paymentMethod = paymentMethodRepository.findById(orderDTO.getPaymentMethodId())
                 .orElseThrow(() -> new ResourceNotFoundException(

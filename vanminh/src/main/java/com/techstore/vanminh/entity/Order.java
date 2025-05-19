@@ -3,6 +3,7 @@ package com.techstore.vanminh.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 
 @Entity
@@ -30,7 +31,7 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "payment_method_id", nullable = false)
-    private PaymentMethod paymentMethod; // Thay String paymentMethod
+    private PaymentMethod paymentMethod;
 
     @ManyToOne
     @JoinColumn(name = "address_id", nullable = false)
