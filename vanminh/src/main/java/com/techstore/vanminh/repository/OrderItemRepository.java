@@ -1,7 +1,7 @@
-package com.techstore.vanminh.repository;
+// package com.techstore.vanminh.repository;
 
-import com.techstore.vanminh.entity.OrderItem;
-import org.springframework.data.jpa.repository.JpaRepository;
+// import com.techstore.vanminh.entity.OrderItem;
+// import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
-}
+// public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
+// }

@@ -50,7 +50,9 @@ public class SecurityConfig {
         // Endpoints for both ADMIN and USER
         private static final String[] ADMIN_USER_ENDPOINTS = {
                         "/api/users/**",
-                        "/api/users/cart/**"
+                        "/api/users/cart/**",
+                        "/api/users/addresses/**",
+                        "/api/orders"
         };
 
         @Bean

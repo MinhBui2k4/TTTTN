@@ -153,17 +153,15 @@ public class CartServiceImpl implements CartService {
         return response;
     }
 
-    @Override
+    // @Override
     public BaseResponse<CartDTO> removeItemFromCart(Long itemId) {
         CartItem cartItem = cartItemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Mục giỏ hàng không tìm thấy với id: " + itemId));
 
         Cart cart = cartItem.getCart();
 
-        // XÓA KHỎI LIST TRONG CART ĐỂ ĐỒNG BỘ BỘ NHỚ & DB
         cart.getItems().remove(cartItem);
 
-        // XÓA KHỎI DATABASE
         cartItemRepository.delete(cartItem);
 
         BaseResponse<CartDTO> response = new BaseResponse<>();

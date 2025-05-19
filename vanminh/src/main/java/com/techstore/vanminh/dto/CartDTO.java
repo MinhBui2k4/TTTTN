@@ -9,5 +9,5 @@ public class CartDTO {
     private Long id;
     private Long userId;
     private List<CartItemDTO> items;
-    private Double totalCartPrice;
+    private Double totalCartPrice; // Tổng giá giỏ hàng
 }
