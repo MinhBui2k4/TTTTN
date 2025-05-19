@@ -186,7 +186,8 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new ResourceNotFoundException("Giỏ hàng không tìm thấy"));
 
         cartItemRepository.deleteAll(cart.getItems());
-        cart.setItems(new ArrayList<>()); // Đảm bảo items rỗng
+        cart.getItems().clear();
         cartRepository.save(cart);
     }
+
 }
