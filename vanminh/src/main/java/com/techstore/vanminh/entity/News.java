@@ -2,14 +2,11 @@ package com.techstore.vanminh.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "news")
 @Data
-
 @NoArgsConstructor
 public class News {
     @Id
@@ -19,19 +16,27 @@ public class News {
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    private String excerpt;
+    private String image; // Đường dẫn hình ảnh (lưu qua FileService)
 
-    private String author;
+    private LocalDateTime createdAt;
 
-    private LocalDateTime date;
+    private LocalDateTime updatedAt;
 
-    private String category;
+    @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author; // Admin tạo tin
 
-    private String image;
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
 
-    @ElementCollection
-    private List<String> tags;
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
