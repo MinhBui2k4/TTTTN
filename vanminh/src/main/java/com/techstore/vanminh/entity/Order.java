@@ -4,12 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "orders")
 @Data
-
 @NoArgsConstructor
 public class Order {
     @Id
@@ -38,10 +37,11 @@ public class Order {
     private Address shippingAddress;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> items;
+    private Set<OrderItem> items = new HashSet<>(); // Thay List thành Set
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderTimeline> timeline;
+    @OrderBy("date ASC") // Sắp xếp timeline theo date
+    private Set<OrderTimeline> timeline = new HashSet<>(); // Thay List thành Set
 
     public enum OrderStatus {
         ORDERED, CONFIRMED, PROCESSING, SHIPPED, COMPLETED, CANCELLED

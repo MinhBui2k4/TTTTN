@@ -18,8 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -85,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
         order.setPaymentMethod(paymentMethod);
         order.setShippingCost(orderDTO.getShippingCost() != null ? orderDTO.getShippingCost() : 0.0);
 
-        List<OrderItem> orderItems = new ArrayList<>();
+        Set<OrderItem> orderItems = new HashSet<>();
         double total = 0.0;
 
         for (CartItem cartItem : cart.getItems()) {
@@ -121,7 +121,9 @@ public class OrderServiceImpl implements OrderService {
         timeline.setStatus(Order.OrderStatus.ORDERED);
         timeline.setDate(LocalDateTime.now());
         timeline.setDescription("Đơn hàng đã được đặt");
-        order.setTimeline(List.of(timeline));
+        Set<OrderTimeline> timelines = new HashSet<>();
+        timelines.add(timeline);
+        order.setTimeline(timelines);
 
         order = orderRepository.save(order);
 

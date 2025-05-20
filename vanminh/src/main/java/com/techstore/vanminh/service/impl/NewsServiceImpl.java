@@ -16,7 +16,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -125,5 +127,10 @@ public class NewsServiceImpl implements NewsService {
         News news = newsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Tin tức không tìm thấy với id: " + id));
         newsRepository.delete(news);
+    }
+
+    @Override
+    public InputStream getNewsImage(String fileName) throws FileNotFoundException {
+        return fileService.getResource(NEWS_IMAGE_DIR, fileName);
     }
 }

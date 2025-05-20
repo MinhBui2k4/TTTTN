@@ -3,7 +3,14 @@ package com.techstore.vanminh.controller;
 import com.techstore.vanminh.dto.NewsDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.service.NewsService;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,5 +55,15 @@ public class NewsController {
     public ResponseEntity<Void> deleteNews(@PathVariable Long id) {
         newsService.deleteNews(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/image/{fileName}")
+    public ResponseEntity<InputStreamResource> getImage(@PathVariable String fileName) throws FileNotFoundException {
+        InputStream imageStream = newsService.getNewsImage(fileName);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        headers.setContentDispositionFormData("inline", fileName);
+
+        return new ResponseEntity<>(new InputStreamResource(imageStream), headers, HttpStatus.OK);
     }
 }

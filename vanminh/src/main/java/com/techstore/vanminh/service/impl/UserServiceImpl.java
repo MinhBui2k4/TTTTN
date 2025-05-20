@@ -1,7 +1,6 @@
 package com.techstore.vanminh.service.impl;
 
 import com.techstore.vanminh.dto.AddressDTO;
-import com.techstore.vanminh.dto.CartDTO;
 import com.techstore.vanminh.dto.RegisterDTO;
 import com.techstore.vanminh.dto.UserDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
@@ -24,7 +23,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -216,5 +217,10 @@ public class UserServiceImpl implements UserService {
         response.setLastPage(userPage.isLast());
 
         return response;
+    }
+
+    @Override
+    public InputStream getAvatar(String fileName) throws FileNotFoundException {
+        return fileService.getResource(avatarPath, fileName);
     }
 }
