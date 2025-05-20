@@ -16,4 +16,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.paymentMethod.id = :paymentMethodId")
     long countByPaymentMethodId(Long paymentMethodId);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId")
+    long countByUserId(Long userId);
+    // @Query("SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId AND o.status
+    // != 'CANCELLED'")
+    // long countByUserIdAndStatusNot(Long userId, Order.OrderStatus status);
 }

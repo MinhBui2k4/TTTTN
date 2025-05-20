@@ -6,10 +6,12 @@ import com.techstore.vanminh.dto.UserDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.entity.Address;
 import com.techstore.vanminh.entity.Cart;
+import com.techstore.vanminh.entity.Order;
 import com.techstore.vanminh.entity.Role;
 import com.techstore.vanminh.entity.User;
 import com.techstore.vanminh.exception.BadRequestException;
 import com.techstore.vanminh.exception.ResourceNotFoundException;
+import com.techstore.vanminh.repository.OrderRepository;
 import com.techstore.vanminh.repository.RoleRepository;
 import com.techstore.vanminh.repository.UserRepository;
 import com.techstore.vanminh.service.FileService;
@@ -18,6 +20,7 @@ import com.techstore.vanminh.util.CartMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,16 +32,22 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.logging.Logger;
 
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
+
+    private static final Logger log = Logger.getLogger(UserServiceImpl.class.getName());
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -157,7 +166,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDTO getUserById(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy User với id: " + userId));
 
         UserDTO userDTO = modelMapper.map(user, UserDTO.class);
 
@@ -174,13 +183,46 @@ public class UserServiceImpl implements UserService {
         return userDTO;
     }
 
-    @Override
-    public String deleteUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+    // @Override
+    // public String deleteUser(Long userId) {
+    // User user = userRepository.findById(userId)
+    // .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " +
+    // userId));
 
-        userRepository.delete(user);
-        return "User deleted successfully with id: " + userId;
+    // userRepository.delete(user);
+    // return "User deleted successfully with id: " + userId;
+    // }
+
+    @Override
+    @Transactional
+    public String deleteUser(Long userId) {
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy với id: " + userId));
+            log.info("Attempting to delete user with ID: " + userId);
+
+            // Kiểm tra xem user có Order nào không
+            long orderCount = orderRepository.countByUserId(userId);
+            if (orderCount > 0) {
+                log.warning("Cannot delete user with ID: " + userId + " due to existing orders: " + orderCount);
+                throw new BadRequestException(
+                        "Không thể xóa người dùng vì họ có " + orderCount + " đơn hàng liên quan");
+            }
+
+            // Xóa quan hệ với roles
+            user.getRoles().clear();
+            userRepository.save(user);
+
+            userRepository.delete(user);
+            log.info("Successfully deleted user with ID: {}" + userId);
+            return "Đã xóa người dùng với ID: " + userId;
+        } catch (DataIntegrityViolationException e) {
+            log.severe("Failed to delete user due to database constraint: {}" + e.getMessage());
+            throw new BadRequestException("Không thể xóa người dùng do có dữ liệu liên quan");
+        } catch (Exception e) {
+            log.severe("Unexpected error while deleting user: {}" + e.getMessage());
+            throw new RuntimeException("Lỗi khi xóa người dùng: " + e.getMessage());
+        }
     }
 
     @Override

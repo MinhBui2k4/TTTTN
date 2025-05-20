@@ -2,6 +2,8 @@ package com.techstore.vanminh.controller;
 
 import com.techstore.vanminh.dto.UserDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
+import com.techstore.vanminh.exception.BadRequestException;
+import com.techstore.vanminh.exception.ResourceNotFoundException;
 import com.techstore.vanminh.service.UserService;
 
 import java.io.FileNotFoundException;
@@ -58,11 +60,25 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(id, userDTO));
     }
 
-    // Chỉ admin có thể xóa người dùng
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    // // Chỉ admin có thể xóa người dùng
+    // @PreAuthorize("hasRole('ROLE_ADMIN')")
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+    // return ResponseEntity.ok("Đã xóa người dùng với ID: " + id);
+    // }
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        return ResponseEntity.ok("Đã xóa người dùng với ID: " + id);
+        try {
+            String result = userService.deleteUser(id);
+            return ResponseEntity.ok(result);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi xóa người dùng");
+        }
     }
 
     // Người dùng đã đăng nhập có thể lấy profile của chính họ
