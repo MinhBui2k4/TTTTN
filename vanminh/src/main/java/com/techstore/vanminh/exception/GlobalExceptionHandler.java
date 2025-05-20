@@ -1,14 +1,16 @@
 package com.techstore.vanminh.exception;
 
-import io.jsonwebtoken.security.WeakKeyException;
-
+import org.hibernate.loader.MultipleBagFetchException;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.hibernate.loader.MultipleBagFetchException;
+
+import io.jsonwebtoken.security.WeakKeyException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,10 +59,25 @@ public class GlobalExceptionHandler {
             InvalidDataAccessApiUsageException ex) {
         Map<String, String> errorResponse = new HashMap<>();
         String message = ex.getCause() instanceof MultipleBagFetchException
-                ? "Lỗi truy vấn dữ liệu: Không thể tải đồng thời nhiều mối quan hệ (bag fetch)"
+                ? "Lỗi truy vấn dữ liệu: Không thể tải đồng thời nhiều mối quan hệ"
                 : "Dữ liệu không hợp lệ: " + ex.getMessage();
         errorResponse.put("error", message);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> handleHttpMessageNotReadableException(
+            HttpMessageNotReadableException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Lỗi định dạng JSON: Vui lòng kiểm tra cú pháp request body");
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(JpaSystemException.class)
+    public ResponseEntity<Map<String, String>> handleJpaSystemException(JpaSystemException ex) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", "Lỗi thao tác dữ liệu: " + ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(WeakKeyException.class)
