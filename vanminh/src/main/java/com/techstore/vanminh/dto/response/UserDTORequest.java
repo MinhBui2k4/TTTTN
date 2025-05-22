@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Size;
 
 @Data
 public class UserDTORequest {
+    private Long id;
+
     @NotBlank(message = "Họ và tên không được để trống")
     @Size(max = 255, message = "Họ và tên không được vượt quá 255 ký tự")
     private String fullName;

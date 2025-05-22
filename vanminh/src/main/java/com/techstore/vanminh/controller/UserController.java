@@ -69,11 +69,13 @@ public class UserController {
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or authentication.principal.id == #userDTO.id")
     public ResponseEntity<UserDTOResponse> updateUser(
             @Valid @ModelAttribute UserDTORequest userDTO) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy với email: " + email));
-        log.info("Received request to update user with ID: " + user.getId());
-        UserDTOResponse updatedUser = userService.updateUser(user.getId(), userDTO);
+
+        if (userDTO.getId() == null) {
+            throw new BadRequestException("ID người dùng không được để trống");
+        }
+
+        log.info("Received request to update user with ID: " + userDTO.getId());
+        UserDTOResponse updatedUser = userService.updateUser(userDTO.getId(), userDTO);
         return ResponseEntity.ok(updatedUser);
     }
 
