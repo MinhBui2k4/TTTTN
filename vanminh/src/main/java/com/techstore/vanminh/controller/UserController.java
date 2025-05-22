@@ -2,12 +2,17 @@ package com.techstore.vanminh.controller;
 
 import com.techstore.vanminh.dto.UserDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
+import com.techstore.vanminh.dto.response.UserDTORequest;
+import com.techstore.vanminh.dto.response.UserDTOResponse;
+import com.techstore.vanminh.entity.User;
 import com.techstore.vanminh.exception.BadRequestException;
 import com.techstore.vanminh.exception.ResourceNotFoundException;
+import com.techstore.vanminh.repository.UserRepository;
 import com.techstore.vanminh.service.UserService;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
@@ -16,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -24,8 +31,13 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/users")
 public class UserController {
 
+    private static final Logger log = Logger.getLogger(UserController.class.getName());
+
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     // Chỉ admin có thể lấy danh sách người dùng
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -53,19 +65,29 @@ public class UserController {
         return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 
-    // Admin hoặc chính người dùng có thể cập nhật thông tin
-    @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.name == #userDTO.email")
-    @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @Valid @ModelAttribute UserDTO userDTO) {
-        return ResponseEntity.ok(userService.updateUser(id, userDTO));
+    @PutMapping(value = "", consumes = { "multipart/form-data" })
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or authentication.principal.id == #userDTO.id")
+    public ResponseEntity<UserDTOResponse> updateUser(
+            @Valid @ModelAttribute UserDTORequest userDTO) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy với email: " + email));
+        log.info("Received request to update user with ID: " + user.getId());
+        UserDTOResponse updatedUser = userService.updateUser(user.getId(), userDTO);
+        return ResponseEntity.ok(updatedUser);
     }
 
-    // // Chỉ admin có thể xóa người dùng
-    // @PreAuthorize("hasRole('ROLE_ADMIN')")
-    // @DeleteMapping("/{id}")
-    // public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-    // return ResponseEntity.ok("Đã xóa người dùng với ID: " + id);
-    // }
+    @PutMapping(value = "/profile", consumes = { "multipart/form-data" })
+    @PreAuthorize("hasAuthority('ROLE_USER')")
+    public ResponseEntity<UserDTOResponse> updateProfile(@Valid @ModelAttribute UserDTORequest userDTO) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("Received request to update profile for email: " + email);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy với email: " + email));
+        UserDTOResponse updatedUser = userService.updateUser(user.getId(), userDTO);
+        return ResponseEntity.ok(updatedUser);
+    }
+
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
@@ -103,5 +125,13 @@ public class UserController {
         headers.setContentDispositionFormData("inline", fileName);
 
         return new ResponseEntity<>(new InputStreamResource(imageStream), headers, HttpStatus.OK);
+    }
+
+    // Xử lý exception trong controller
+    @ExceptionHandler(MissingPathVariableException.class)
+    public ResponseEntity<String> handleMissingPathVariable(MissingPathVariableException ex) {
+        log.severe("Missing path variable: " + ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Thiếu biến userId trong URL. Vui lòng cung cấp ID hợp lệ, ví dụ: /api/users/4");
     }
 }

@@ -21,7 +21,7 @@ public class FileServiceImpl implements FileService {
     @Override
     public String uploadAvatar(String path, MultipartFile file, Long userId) throws IOException {
         String date = new SimpleDateFormat("ddMMyyyy-HHmmss").format(new Date());
-        String fileName = "a-" + (userId != null ? userId : "new") + "-" + date
+        String fileName = "u-" + (userId != null ? userId : "new") + "-" + date
                 + getFileExtension(file.getOriginalFilename());
         return saveFile(path, file, fileName);
     }

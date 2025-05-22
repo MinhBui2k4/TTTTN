@@ -2,8 +2,11 @@ package com.techstore.vanminh.service.impl;
 
 import com.techstore.vanminh.dto.AddressDTO;
 import com.techstore.vanminh.dto.RegisterDTO;
+import com.techstore.vanminh.dto.RoleDTO;
 import com.techstore.vanminh.dto.UserDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
+import com.techstore.vanminh.dto.response.UserDTORequest;
+import com.techstore.vanminh.dto.response.UserDTOResponse;
 import com.techstore.vanminh.entity.Address;
 import com.techstore.vanminh.entity.Cart;
 import com.techstore.vanminh.entity.Order;
@@ -95,9 +98,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO updateUser(Long userId, UserDTO userDTO) {
+    @Transactional
+    public UserDTOResponse updateUser(Long userId, UserDTORequest userDTO) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy với id: " + userId));
+
+        // Kiểm tra email trùng lặp
+        if (!user.getEmail().equals(userDTO.getEmail()) && userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+            throw new BadRequestException("Email đã được sử dụng");
+        }
 
         user.setFullName(userDTO.getFullName());
         user.setEmail(userDTO.getEmail());
@@ -105,18 +114,6 @@ public class UserServiceImpl implements UserService {
 
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        }
-
-        if (userDTO.getAddresses() != null) {
-            user.setAddresses(userDTO.getAddresses().stream()
-                    .map(dto -> modelMapper.map(dto, Address.class))
-                    .collect(Collectors.toList()));
-        }
-
-        if (userDTO.getCart() != null) {
-            Cart cart = modelMapper.map(userDTO.getCart(), Cart.class);
-            cart.setUser(user);
-            user.setCart(cart);
         }
 
         if (userDTO.getAvatarFile() != null && !userDTO.getAvatarFile().isEmpty()) {
@@ -129,18 +126,25 @@ public class UserServiceImpl implements UserService {
         }
 
         User updatedUser = userRepository.save(user);
-        UserDTO updatedUserDTO = modelMapper.map(updatedUser, UserDTO.class);
+        UserDTOResponse response = modelMapper.map(updatedUser, UserDTOResponse.class);
 
         if (updatedUser.getAddresses() != null) {
-            updatedUserDTO.setAddresses(updatedUser.getAddresses().stream()
+            response.setAddresses(updatedUser.getAddresses().stream()
                     .map(address -> modelMapper.map(address, AddressDTO.class))
                     .collect(Collectors.toList()));
         }
-        if (updatedUser.getCart() != null) {
-            updatedUserDTO.setCart(cartMapper.mapToCartDTO(updatedUser.getCart()));
+
+        if (updatedUser.getRoles() != null) {
+            response.setRoles(updatedUser.getRoles().stream()
+                    .map(role -> modelMapper.map(role, RoleDTO.class))
+                    .collect(Collectors.toList()));
         }
 
-        return updatedUserDTO;
+        if (updatedUser.getCart() != null) {
+            response.setCart(cartMapper.mapToCartDTO(updatedUser.getCart()));
+        }
+
+        return response;
     }
 
     @Override
@@ -182,16 +186,6 @@ public class UserServiceImpl implements UserService {
 
         return userDTO;
     }
-
-    // @Override
-    // public String deleteUser(Long userId) {
-    // User user = userRepository.findById(userId)
-    // .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " +
-    // userId));
-
-    // userRepository.delete(user);
-    // return "User deleted successfully with id: " + userId;
-    // }
 
     @Override
     @Transactional

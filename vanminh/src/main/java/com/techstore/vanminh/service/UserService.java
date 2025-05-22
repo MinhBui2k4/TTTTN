@@ -6,6 +6,8 @@ import java.io.InputStream;
 import com.techstore.vanminh.dto.RegisterDTO;
 import com.techstore.vanminh.dto.UserDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
+import com.techstore.vanminh.dto.response.UserDTORequest;
+import com.techstore.vanminh.dto.response.UserDTOResponse;
 
 public interface UserService {
 
@@ -17,7 +19,7 @@ public interface UserService {
 
     UserDTO getUserByEmail(String email);
 
-    UserDTO updateUser(Long userId, UserDTO userDTO);
+    public UserDTOResponse updateUser(Long userId, UserDTORequest userDTO);
 
     String deleteUser(Long userId);
 

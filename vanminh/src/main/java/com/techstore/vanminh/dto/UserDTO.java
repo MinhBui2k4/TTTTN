@@ -23,7 +23,7 @@ public class UserDTO {
 
     private String phone;
 
-    // private String avatarUrl;
+    private String avatarUrl;
 
     private MultipartFile avatarFile;
 
