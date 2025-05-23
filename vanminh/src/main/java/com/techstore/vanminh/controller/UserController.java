@@ -53,8 +53,9 @@ public class UserController {
     // Admin hoặc chính người dùng có thể lấy thông tin theo ID
     @PreAuthorize("hasRole('ROLE_ADMIN') or authentication.name == #email")
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
-        UserDTO userDTO = userService.getUserById(id);
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id,
+            @RequestParam(defaultValue = "false") boolean includeOrders) {
+        UserDTO userDTO = userService.getUserById(id, includeOrders);
         return ResponseEntity.ok(userDTO);
     }
 

@@ -1,25 +1,15 @@
-package com.techstore.vanminh.dto;
+package com.techstore.vanminh.dto.response;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
-public class OrderItemDTO {
-    private Long id;
-
-    private Long orderId;
-
+public class OrderItemRequestDTO {
     @NotNull(message = "Product ID is required")
     @Positive(message = "Product ID must be positive")
     private Long productId;
 
-    private String productName;
-
     @NotNull(message = "Quantity is required")
     @Positive(message = "Quantity must be positive")
     private Integer quantity;
-
-    @NotNull(message = "Price is required")
-    @PositiveOrZero(message = "Price must be positive or zero")
-    private Double price;
 }

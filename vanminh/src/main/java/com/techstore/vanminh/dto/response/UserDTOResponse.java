@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.techstore.vanminh.dto.AddressDTO;
 import com.techstore.vanminh.dto.CartDTO;
+import com.techstore.vanminh.dto.OrderDTO;
 import com.techstore.vanminh.dto.RoleDTO;
 
 import jakarta.validation.constraints.NotBlank;
@@ -28,6 +29,10 @@ public class UserDTOResponse {
     private String avatarUrl;
 
     private List<AddressDTO> addresses;
+
     private List<RoleDTO> roles;
+
     private CartDTO cart;
+
+    private List<OrderDTO> orders; 
 }

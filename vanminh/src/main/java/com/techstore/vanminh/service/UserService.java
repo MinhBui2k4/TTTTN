@@ -17,6 +17,8 @@ public interface UserService {
 
     UserDTO getUserById(Long userId);
 
+    UserDTO getUserById(Long userId, boolean includeOrders);
+
     UserDTO getUserByEmail(String email);
 
     public UserDTOResponse updateUser(Long userId, UserDTORequest userDTO);

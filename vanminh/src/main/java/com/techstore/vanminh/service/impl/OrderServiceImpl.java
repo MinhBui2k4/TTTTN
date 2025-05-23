@@ -1,15 +1,13 @@
 package com.techstore.vanminh.service.impl;
 
-import com.techstore.vanminh.dto.OrderDTO;
-import com.techstore.vanminh.dto.OrderItemDTO;
-import com.techstore.vanminh.dto.OrderTimelineDTO;
-import com.techstore.vanminh.dto.response.BaseResponse;
+import com.techstore.vanminh.controller.UserController;
+import com.techstore.vanminh.dto.response.*;
 import com.techstore.vanminh.entity.*;
 import com.techstore.vanminh.exception.BadRequestException;
 import com.techstore.vanminh.exception.ResourceNotFoundException;
 import com.techstore.vanminh.repository.*;
 import com.techstore.vanminh.service.OrderService;
-import org.modelmapper.ModelMapper;
+import com.techstore.vanminh.util.OrderMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,11 +18,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.logging.Logger;
 
 @Service
 @Transactional
 public class OrderServiceImpl implements OrderService {
+
+    private static final Logger logger = Logger.getLogger(UserController.class.getName());
 
     @Autowired
     private OrderRepository orderRepository;
@@ -54,48 +54,56 @@ public class OrderServiceImpl implements OrderService {
     private PaymentMethodRepository paymentMethodRepository;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private OrderMapper orderMapper;
 
-    @Override
-    public OrderDTO createOrder(OrderDTO orderDTO) {
+    @Transactional
+    public OrderResponseDTO createOrderFromCart(Long paymentMethodId, Long shippingAddressId, Double shippingCost) {
+        logger.info("Starting createOrderFromCart for user: "
+                + SecurityContextHolder.getContext().getAuthentication().getName());
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy"));
+                .orElseThrow(() -> new BadRequestException("User not found"));
+        logger.info("Found user: " + user.getId());
 
         Cart cart = cartRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Giỏ hàng không tìm thấy"));
+                .orElseThrow(() -> new BadRequestException("Cart not found"));
+        logger.info("Found cart: " + cart.getId());
 
         if (cart.getItems().isEmpty()) {
-            throw new BadRequestException("Giỏ hàng trống");
+            throw new BadRequestException("Cart is empty");
         }
 
-        Address shippingAddress = addressRepository.findByIdAndUserId(orderDTO.getShippingAddressId(), user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Địa chỉ giao hàng không tìm thấy hoặc không thuộc về bạn"));
+        PaymentMethod paymentMethod = paymentMethodRepository.findById(paymentMethodId)
+                .orElseThrow(() -> new BadRequestException("Payment method not found"));
+        logger.info("Found payment method: " + paymentMethodId);
 
-        PaymentMethod paymentMethod = paymentMethodRepository.findById(orderDTO.getPaymentMethodId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Phương thức thanh toán không tìm thấy với id: " + orderDTO.getPaymentMethodId()));
+        Address shippingAddress = addressRepository.findById(shippingAddressId)
+                .orElseThrow(() -> new BadRequestException("Shipping address not found"));
+        logger.info("Found shipping address: " + shippingAddressId);
 
         Order order = new Order();
         order.setUser(user);
         order.setOrderDate(LocalDateTime.now());
         order.setStatus(Order.OrderStatus.ORDERED);
-        order.setShippingAddress(shippingAddress);
         order.setPaymentMethod(paymentMethod);
-        order.setShippingCost(orderDTO.getShippingCost() != null ? orderDTO.getShippingCost() : 0.0);
+        order.setShippingAddress(shippingAddress);
+        order.setShippingCost(shippingCost);
+        logger.info("Created order entity");
 
+        // Lưu Order trước
+        orderRepository.saveAndFlush(order);
+        logger.info("Saved order: " + order.getId());
+
+        double total = 0;
         Set<OrderItem> orderItems = new HashSet<>();
-        double total = 0.0;
-
         for (CartItem cartItem : cart.getItems()) {
-            Product product = cartItem.getProduct();
-            if (!product.isAvailability()) {
-                throw new BadRequestException("Sản phẩm " + product.getName() + " hiện không có sẵn");
-            }
-            if (cartItem.getQuantity() > product.getQuantity()) {
-                throw new BadRequestException(
-                        "Số lượng sản phẩm " + product.getName() + " vượt quá tồn kho: " + product.getQuantity());
+            logger.info("Processing cart item: " + cartItem.getId());
+            Product product = productRepository.findById(cartItem.getProduct().getId())
+                    .orElseThrow(() -> new BadRequestException("Product not found: " + cartItem.getProduct().getId()));
+            logger.info("Found product: " + product.getId());
+
+            if (product.getQuantity() < cartItem.getQuantity()) {
+                throw new BadRequestException("Insufficient stock for product: " + product.getName());
             }
 
             OrderItem orderItem = new OrderItem();
@@ -103,50 +111,112 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setProduct(product);
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setPrice(product.getPrice());
+            logger.info("Created order item: " + orderItem.getId());
+
             orderItems.add(orderItem);
+            logger.info("Added order item to set");
 
-            total += product.getPrice() * cartItem.getQuantity();
+            // Lưu OrderItem riêng
+            orderItemRepository.save(orderItem);
+            logger.info("Saved order item: " + orderItem.getId());
 
-            // Giảm số lượng tồn kho
             product.setQuantity(product.getQuantity() - cartItem.getQuantity());
             productRepository.save(product);
+            logger.info("Updated product quantity: " + product.getId());
+
+            total += cartItem.getQuantity() * product.getPrice();
         }
-
         order.setItems(orderItems);
-        order.setTotal(total + order.getShippingCost());
+        order.setTotal(total + shippingCost);
+        logger.info("Set order items and total");
 
-        // Tạo timeline
         OrderTimeline timeline = new OrderTimeline();
         timeline.setOrder(order);
         timeline.setStatus(Order.OrderStatus.ORDERED);
         timeline.setDate(LocalDateTime.now());
-        timeline.setDescription("Đơn hàng đã được đặt");
-        Set<OrderTimeline> timelines = new HashSet<>();
-        timelines.add(timeline);
-        order.setTimeline(timelines);
+        timeline.setDescription("Order placed");
+        order.getTimeline().add(timeline);
+        logger.info("Added timeline");
 
-        order = orderRepository.save(order);
+        // Lưu lại Order
+        orderRepository.save(order);
+        logger.info("Final save order: " + order.getId());
 
         // Xóa giỏ hàng
         cartItemRepository.deleteAll(cart.getItems());
         cart.getItems().clear();
         cartRepository.save(cart);
+        logger.info("Cleared cart");
 
-        return modelMapper.map(order, OrderDTO.class);
+        OrderResponseDTO responseDTO = orderMapper.toOrderResponseDTO(order);
+        logger.info("Mapped to OrderResponseDTO");
+        return responseDTO;
+    }
+
+    @Transactional
+    public OrderResponseDTO createOrder(OrderRequestDTO orderRequestDTO) {
+        User user = userRepository.findById(orderRequestDTO.getUserId())
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        PaymentMethod paymentMethod = paymentMethodRepository.findById(orderRequestDTO.getPaymentMethodId())
+                .orElseThrow(() -> new BadRequestException("Payment method not found"));
+
+        Address shippingAddress = addressRepository.findById(orderRequestDTO.getShippingAddressId())
+                .orElseThrow(() -> new BadRequestException("Shipping address not found"));
+
+        Order order = orderMapper.toOrder(orderRequestDTO);
+        order.setUser(user);
+        order.setOrderDate(LocalDateTime.now());
+        order.setStatus(Order.OrderStatus.ORDERED);
+        order.setPaymentMethod(paymentMethod);
+        order.setShippingAddress(shippingAddress);
+
+        double total = 0;
+        Set<OrderItem> orderItems = new HashSet<>();
+        for (OrderItemRequestDTO itemDTO : orderRequestDTO.getItems()) {
+            Product product = productRepository.findById(itemDTO.getProductId())
+                    .orElseThrow(() -> new BadRequestException("Product not found: " + itemDTO.getProductId()));
+
+            if (product.getQuantity() < itemDTO.getQuantity()) {
+                throw new BadRequestException("Insufficient stock for product: " + product.getName());
+            }
+
+            OrderItem orderItem = orderMapper.toOrderItem(itemDTO);
+            orderItem.setOrder(order);
+            orderItem.setProduct(product);
+            orderItem.setPrice(product.getPrice());
+            orderItems.add(orderItem);
+
+            product.setQuantity(product.getQuantity() - itemDTO.getQuantity());
+            productRepository.save(product);
+
+            total += itemDTO.getQuantity() * product.getPrice();
+        }
+        order.setItems(orderItems);
+        order.setTotal(total + orderRequestDTO.getShippingCost());
+
+        OrderTimeline timeline = new OrderTimeline();
+        timeline.setOrder(order);
+        timeline.setStatus(Order.OrderStatus.ORDERED);
+        timeline.setDate(LocalDateTime.now());
+        timeline.setDescription("Order placed");
+        order.getTimeline().add(timeline);
+
+        orderRepository.save(order);
+
+        return orderMapper.toOrderResponseDTO(order);
     }
 
     @Override
-    public BaseResponse<OrderDTO> getUserOrders(Pageable pageable) {
+    public BaseResponse<OrderResponseDTO> getUserOrders(Pageable pageable) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy"));
 
         Page<Order> orders = orderRepository.findByUserId(user.getId(), pageable);
 
-        BaseResponse<OrderDTO> response = new BaseResponse<>();
-        response.setContent(orders.getContent().stream()
-                .map(order -> modelMapper.map(order, OrderDTO.class))
-                .collect(Collectors.toList()));
+        BaseResponse<OrderResponseDTO> response = new BaseResponse<>();
+        response.setContent(orderMapper.toOrderResponseDTOList(orders.getContent()));
         response.setPageNumber(orders.getNumber());
         response.setPageSize(orders.getSize());
         response.setTotalElements(orders.getTotalElements());
@@ -157,7 +227,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderDTO getOrderById(Long id) {
+    public OrderResponseDTO getOrderById(Long id) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy"));
@@ -169,11 +239,11 @@ public class OrderServiceImpl implements OrderService {
             throw new BadRequestException("Bạn không có quyền xem đơn hàng này");
         }
 
-        return modelMapper.map(order, OrderDTO.class);
+        return orderMapper.toOrderResponseDTO(order);
     }
 
     @Override
-    public OrderDTO cancelOrder(Long id) {
+    public OrderResponseDTO cancelOrder(Long id) {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy"));
@@ -191,14 +261,12 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(Order.OrderStatus.CANCELLED);
 
-        // Khôi phục số lượng tồn kho
         for (OrderItem item : order.getItems()) {
             Product product = item.getProduct();
             product.setQuantity(product.getQuantity() + item.getQuantity());
             productRepository.save(product);
         }
 
-        // Cập nhật timeline
         OrderTimeline timeline = new OrderTimeline();
         timeline.setOrder(order);
         timeline.setStatus(Order.OrderStatus.CANCELLED);
@@ -208,11 +276,11 @@ public class OrderServiceImpl implements OrderService {
 
         order = orderRepository.save(order);
 
-        return modelMapper.map(order, OrderDTO.class);
+        return orderMapper.toOrderResponseDTO(order);
     }
 
     @Override
-    public OrderDTO updateOrderStatus(Long id, String status) {
+    public OrderResponseDTO updateOrderStatus(Long id, String status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn hàng không tìm thấy với id: " + id));
 
@@ -225,7 +293,6 @@ public class OrderServiceImpl implements OrderService {
 
             order.setStatus(newStatus);
 
-            // Cập nhật timeline
             OrderTimeline timeline = new OrderTimeline();
             timeline.setOrder(order);
             timeline.setStatus(newStatus);
@@ -235,7 +302,7 @@ public class OrderServiceImpl implements OrderService {
 
             order = orderRepository.save(order);
 
-            return modelMapper.map(order, OrderDTO.class);
+            return orderMapper.toOrderResponseDTO(order);
         } catch (IllegalArgumentException e) {
             throw new BadRequestException("Trạng thái không hợp lệ: " + status);
         }

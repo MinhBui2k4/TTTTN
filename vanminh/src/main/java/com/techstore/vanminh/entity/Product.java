@@ -1,5 +1,6 @@
 package com.techstore.vanminh.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,8 +9,6 @@ import java.util.List;
 @Entity
 @Table(name = "products")
 @Data
-@Getter
-@Setter
 @NoArgsConstructor
 public class Product {
     @Id
@@ -42,10 +41,12 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
+    @JsonIgnore
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id")
+    @JsonIgnore
     private Brand brand;
 
     private String sku;

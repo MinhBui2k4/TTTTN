@@ -1,24 +1,13 @@
 package com.techstore.vanminh.service.impl;
 
-import com.techstore.vanminh.dto.AddressDTO;
-import com.techstore.vanminh.dto.RegisterDTO;
-import com.techstore.vanminh.dto.RoleDTO;
-import com.techstore.vanminh.dto.UserDTO;
+import com.techstore.vanminh.dto.*;
 import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.dto.response.UserDTORequest;
 import com.techstore.vanminh.dto.response.UserDTOResponse;
-import com.techstore.vanminh.entity.Address;
-import com.techstore.vanminh.entity.Cart;
-import com.techstore.vanminh.entity.Order;
-import com.techstore.vanminh.entity.Role;
-import com.techstore.vanminh.entity.User;
-import com.techstore.vanminh.exception.BadRequestException;
-import com.techstore.vanminh.exception.ResourceNotFoundException;
-import com.techstore.vanminh.repository.OrderRepository;
-import com.techstore.vanminh.repository.RoleRepository;
-import com.techstore.vanminh.repository.UserRepository;
-import com.techstore.vanminh.service.FileService;
-import com.techstore.vanminh.service.UserService;
+import com.techstore.vanminh.entity.*;
+import com.techstore.vanminh.exception.*;
+import com.techstore.vanminh.repository.*;
+import com.techstore.vanminh.service.*;
 import com.techstore.vanminh.util.CartMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -103,7 +91,6 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy với id: " + userId));
 
-        // Kiểm tra email trùng lặp
         if (!user.getEmail().equals(userDTO.getEmail()) && userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
             throw new BadRequestException("Email đã được sử dụng");
         }
@@ -144,7 +131,69 @@ public class UserServiceImpl implements UserService {
             response.setCart(cartMapper.mapToCartDTO(updatedUser.getCart()));
         }
 
+        if (updatedUser.getOrders() != null) {
+            response.setOrders(updatedUser.getOrders().stream()
+                    .map(order -> {
+                        OrderDTO orderDTO = modelMapper.map(order, OrderDTO.class);
+                        // Ánh xạ items
+                        orderDTO.setItems(order.getItems().stream()
+                                .map(item -> {
+                                    OrderItemDTO itemDTO = modelMapper.map(item, OrderItemDTO.class);
+                                    itemDTO.setProductName(item.getProduct().getName());
+                                    return itemDTO;
+                                })
+                                .collect(Collectors.toList()));
+                        // Ánh xạ timeline
+                        orderDTO.setTimeline(order.getTimeline().stream()
+                                .map(timeline -> modelMapper.map(timeline, OrderTimelineDTO.class))
+                                .collect(Collectors.toList()));
+                        return orderDTO;
+                    })
+                    .collect(Collectors.toList()));
+        }
+
         return response;
+    }
+
+    @Override
+    public UserDTO getUserById(Long userId, boolean includeOrders) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy User với id: " + userId));
+
+        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+
+        if (user.getAddresses() != null) {
+            userDTO.setAddresses(user.getAddresses().stream()
+                    .map(address -> modelMapper.map(address, AddressDTO.class))
+                    .collect(Collectors.toList()));
+        }
+
+        if (user.getCart() != null) {
+            userDTO.setCart(cartMapper.mapToCartDTO(user.getCart()));
+        }
+
+        if (includeOrders && user.getOrders() != null) {
+            userDTO.setOrders(user.getOrders().stream()
+                    .sorted((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()))
+                    .limit(10)
+                    .map(order -> {
+                        OrderDTO orderDTO = modelMapper.map(order, OrderDTO.class);
+                        orderDTO.setItems(order.getItems().stream()
+                                .map(item -> {
+                                    OrderItemDTO itemDTO = modelMapper.map(item, OrderItemDTO.class);
+                                    itemDTO.setProductName(item.getProduct().getName());
+                                    return itemDTO;
+                                })
+                                .collect(Collectors.toList()));
+                        orderDTO.setTimeline(order.getTimeline().stream()
+                                .map(timeline -> modelMapper.map(timeline, OrderTimelineDTO.class))
+                                .collect(Collectors.toList()));
+                        return orderDTO;
+                    })
+                    .collect(Collectors.toList()));
+        }
+
+        return userDTO;
     }
 
     @Override
@@ -162,6 +211,25 @@ public class UserServiceImpl implements UserService {
 
         if (user.getCart() != null) {
             userDTO.setCart(cartMapper.mapToCartDTO(user.getCart()));
+        }
+
+        if (user.getOrders() != null) {
+            userDTO.setOrders(user.getOrders().stream()
+                    .map(order -> {
+                        OrderDTO orderDTO = modelMapper.map(order, OrderDTO.class);
+                        orderDTO.setItems(order.getItems().stream()
+                                .map(item -> {
+                                    OrderItemDTO itemDTO = modelMapper.map(item, OrderItemDTO.class);
+                                    itemDTO.setProductName(item.getProduct().getName());
+                                    return itemDTO;
+                                })
+                                .collect(Collectors.toList()));
+                        orderDTO.setTimeline(order.getTimeline().stream()
+                                .map(timeline -> modelMapper.map(timeline, OrderTimelineDTO.class))
+                                .collect(Collectors.toList()));
+                        return orderDTO;
+                    })
+                    .collect(Collectors.toList()));
         }
 
         return userDTO;
@@ -184,6 +252,25 @@ public class UserServiceImpl implements UserService {
             userDTO.setCart(cartMapper.mapToCartDTO(user.getCart()));
         }
 
+        if (user.getOrders() != null) {
+            userDTO.setOrders(user.getOrders().stream()
+                    .map(order -> {
+                        OrderDTO orderDTO = modelMapper.map(order, OrderDTO.class);
+                        orderDTO.setItems(order.getItems().stream()
+                                .map(item -> {
+                                    OrderItemDTO itemDTO = modelMapper.map(item, OrderItemDTO.class);
+                                    itemDTO.setProductName(item.getProduct().getName());
+                                    return itemDTO;
+                                })
+                                .collect(Collectors.toList()));
+                        orderDTO.setTimeline(order.getTimeline().stream()
+                                .map(timeline -> modelMapper.map(timeline, OrderTimelineDTO.class))
+                                .collect(Collectors.toList()));
+                        return orderDTO;
+                    })
+                    .collect(Collectors.toList()));
+        }
+
         return userDTO;
     }
 
@@ -195,7 +282,6 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy với id: " + userId));
             log.info("Attempting to delete user with ID: " + userId);
 
-            // Kiểm tra xem user có Order nào không
             long orderCount = orderRepository.countByUserId(userId);
             if (orderCount > 0) {
                 log.warning("Cannot delete user with ID: " + userId + " due to existing orders: " + orderCount);
@@ -203,7 +289,6 @@ public class UserServiceImpl implements UserService {
                         "Không thể xóa người dùng vì họ có " + orderCount + " đơn hàng liên quan");
             }
 
-            // Xóa quan hệ với roles
             user.getRoles().clear();
             userRepository.save(user);
 
@@ -239,6 +324,24 @@ public class UserServiceImpl implements UserService {
                     }
                     if (user.getCart() != null) {
                         dto.setCart(cartMapper.mapToCartDTO(user.getCart()));
+                    }
+                    if (user.getOrders() != null) {
+                        dto.setOrders(user.getOrders().stream()
+                                .map(order -> {
+                                    OrderDTO orderDTO = modelMapper.map(order, OrderDTO.class);
+                                    orderDTO.setItems(order.getItems().stream()
+                                            .map(item -> {
+                                                OrderItemDTO itemDTO = modelMapper.map(item, OrderItemDTO.class);
+                                                itemDTO.setProductName(item.getProduct().getName());
+                                                return itemDTO;
+                                            })
+                                            .collect(Collectors.toList()));
+                                    orderDTO.setTimeline(order.getTimeline().stream()
+                                            .map(timeline -> modelMapper.map(timeline, OrderTimelineDTO.class))
+                                            .collect(Collectors.toList()));
+                                    return orderDTO;
+                                })
+                                .collect(Collectors.toList()));
                     }
                     return dto;
                 })

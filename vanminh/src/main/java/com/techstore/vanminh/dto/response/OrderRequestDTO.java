@@ -1,26 +1,17 @@
-package com.techstore.vanminh.dto;
-
-import lombok.Data;
-import java.time.LocalDateTime;
-import java.util.List;
+package com.techstore.vanminh.dto.response;
 
 import jakarta.validation.constraints.*;
+import lombok.Data;
+
+import java.util.List;
 
 @Data
-public class OrderDTO {
-    private Long id;
-
+public class OrderRequestDTO {
     @NotNull(message = "User ID is required")
     @Positive(message = "User ID must be positive")
     private Long userId;
 
-    private LocalDateTime orderDate;
-
-    private String status;
-
-    @PositiveOrZero(message = "Total must be positive or zero")
-    private Double total;
-
+    @NotNull(message = "Shipping cost is required")
     @PositiveOrZero(message = "Shipping cost must be positive or zero")
     private Double shippingCost;
 
@@ -33,7 +24,5 @@ public class OrderDTO {
     private Long shippingAddressId;
 
     @NotEmpty(message = "Order must contain at least one item")
-    private List<OrderItemDTO> items;
-
-    private List<OrderTimelineDTO> timeline;
+    private List<OrderItemRequestDTO> items;
 }

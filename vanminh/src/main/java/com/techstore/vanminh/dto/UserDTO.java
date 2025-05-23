@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import java.util.List;
 
 @Data
@@ -32,4 +33,7 @@ public class UserDTO {
     private List<RoleDTO> roles;
 
     private CartDTO cart;
+
+    private List<OrderDTO> orders; // Thêm danh sách đơn hàng
+ 
 }
