@@ -15,6 +15,8 @@ public interface FileService {
     String uploadImgProduct(String path, MultipartFile file) throws IOException;
 
     String uploadImgProducts(String path, MultipartFile file, int index) throws IOException;
+    
+    String uploadImgHeroSection(String path, MultipartFile file) throws IOException;
 
     InputStream getResource(String path, String fileName) throws FileNotFoundException;
 }

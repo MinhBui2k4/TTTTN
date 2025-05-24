@@ -12,7 +12,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface NewsRepository extends JpaRepository<News, Long> {
     Page<News> findAll(Pageable pageable);
-
     @Query("SELECT n FROM News n WHERE LOWER(n.title) LIKE LOWER(CONCAT('%', :search, '%')) OR LOWER(n.content) LIKE LOWER(CONCAT('%', :search, '%'))")
     List<News> findByTitleOrContentContainingIgnoreCase(@Param("search") String search);
 

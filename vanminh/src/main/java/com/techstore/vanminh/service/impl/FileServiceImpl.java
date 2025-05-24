@@ -34,6 +34,13 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    public String uploadImgHeroSection(String path, MultipartFile file) throws IOException {
+        String date = new SimpleDateFormat("ddMMyyyy-HHmmss").format(new Date());
+        String fileName = "herosection-" + date + getFileExtension(file.getOriginalFilename());
+        return saveFile(path, file, fileName);
+    }
+
+    @Override
     public String uploadImgProduct(String path, MultipartFile file) throws IOException {
         String date = new SimpleDateFormat("ddMMyyyy-HHmmss").format(new Date());
         String fileName = "p-" + date + getFileExtension(file.getOriginalFilename());
