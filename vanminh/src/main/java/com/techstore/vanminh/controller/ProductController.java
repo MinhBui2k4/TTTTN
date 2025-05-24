@@ -100,7 +100,7 @@ public class ProductController {
             @RequestParam(defaultValue = "asc") String sortOrder) {
         Sort sort = sortOrder.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
-        return ResponseEntity.ok(productService.getProductIsAvailability(pageable));
+        return ResponseEntity.ok(productService.getAvailableProducts(pageable));
     }
 
     @GetMapping("/category/{categoryId}")

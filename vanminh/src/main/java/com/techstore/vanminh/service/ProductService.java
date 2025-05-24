@@ -24,7 +24,7 @@ public interface ProductService {
 
     BaseResponse<ProductDTO> getProductIsSales(Pageable pageable);
 
-    BaseResponse<ProductDTO> getProductIsAvailability(Pageable pageable);
+    BaseResponse<ProductDTO> getAvailableProducts(Pageable pageable);
 
     BaseResponse<ProductDTO> findByCategoryCategoryId(Long categoryId, Pageable pageable);
 

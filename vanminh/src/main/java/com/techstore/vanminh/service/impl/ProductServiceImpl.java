@@ -12,6 +12,8 @@ import com.techstore.vanminh.repository.CategoryRepository;
 import com.techstore.vanminh.repository.ProductRepository;
 import com.techstore.vanminh.service.FileService;
 import com.techstore.vanminh.service.ProductService;
+import com.techstore.vanminh.util.ProductMapper;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,10 +26,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
+
+    private static final Logger logger = Logger.getLogger(ProductServiceImpl.class.getName());
 
     @Autowired
     private ProductRepository productRepository;
@@ -40,6 +45,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private ProductMapper productMapper;
 
     @Autowired
     private FileService fileService;
@@ -61,7 +69,7 @@ public class ProductServiceImpl implements ProductService {
 
         BaseResponse<ProductDTO> response = new BaseResponse<>();
         response.setContent(products.getContent().stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .map(productMapper::toProductDTO)
                 .collect(Collectors.toList()));
         response.setPageNumber(products.getNumber());
         response.setPageSize(products.getSize());
@@ -197,7 +205,7 @@ public class ProductServiceImpl implements ProductService {
 
         BaseResponse<ProductDTO> response = new BaseResponse<>();
         response.setContent(products.getContent().stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .map(productMapper::toProductDTO)
                 .collect(Collectors.toList()));
         response.setPageNumber(products.getNumber());
         response.setPageSize(products.getSize());
@@ -214,7 +222,7 @@ public class ProductServiceImpl implements ProductService {
 
         BaseResponse<ProductDTO> response = new BaseResponse<>();
         response.setContent(products.getContent().stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .map(productMapper::toProductDTO)
                 .collect(Collectors.toList()));
         response.setPageNumber(products.getNumber());
         response.setPageSize(products.getSize());
@@ -226,18 +234,21 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public BaseResponse<ProductDTO> getProductIsAvailability(Pageable pageable) {
-        Page<Product> products = productRepository.findByIsAvailabilityTrue(pageable);
+    public BaseResponse<ProductDTO> getAvailableProducts(Pageable pageable) {
+        logger.info("Starting getAvailableProducts with pageable: " + pageable);
+        Page<Product> products = productRepository.findByAvailabilityTrue(pageable);
+        logger.info("Found " + products.getTotalElements() + " available products");
 
         BaseResponse<ProductDTO> response = new BaseResponse<>();
         response.setContent(products.getContent().stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .map(productMapper::toProductDTO)
                 .collect(Collectors.toList()));
         response.setPageNumber(products.getNumber());
         response.setPageSize(products.getSize());
         response.setTotalElements(products.getTotalElements());
         response.setTotalPages(products.getTotalPages());
         response.setLastPage(products.isLast());
+        logger.info("Completed getAvailableProducts");
 
         return response;
     }
@@ -248,7 +259,7 @@ public class ProductServiceImpl implements ProductService {
 
         BaseResponse<ProductDTO> response = new BaseResponse<>();
         response.setContent(products.getContent().stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .map(productMapper::toProductDTO)
                 .collect(Collectors.toList()));
         response.setPageNumber(products.getNumber());
         response.setPageSize(products.getSize());
@@ -269,7 +280,7 @@ public class ProductServiceImpl implements ProductService {
 
         BaseResponse<ProductDTO> response = new BaseResponse<>();
         response.setContent(products.getContent().stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .map(productMapper::toProductDTO)
                 .collect(Collectors.toList()));
         response.setPageNumber(products.getNumber());
         response.setPageSize(products.getSize());
