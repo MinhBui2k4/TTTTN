@@ -8,8 +8,11 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items LEFT JOIN FETCH o.timeline WHERE o.user.id = :userId")
+    @Query("SELECT o FROM Order o WHERE o.user.id = :userId")
     Page<Order> findByUserId(Long userId, Pageable pageable);
+
+    @Query("SELECT o FROM Order o WHERE o.status = :status")
+    Page<Order> findByStatus(Order.OrderStatus status, Pageable pageable);
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.shippingAddress.id = :addressId")
     long countByShippingAddressId(Long addressId);
@@ -19,7 +22,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId")
     long countByUserId(Long userId);
-    // @Query("SELECT COUNT(o) FROM Order o WHERE o.user.id = :userId AND o.status
-    // != 'CANCELLED'")
-    // long countByUserIdAndStatusNot(Long userId, Order.OrderStatus status);
 }

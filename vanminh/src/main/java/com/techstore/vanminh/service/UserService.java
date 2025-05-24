@@ -25,6 +25,8 @@ public interface UserService {
 
     String deleteUser(Long userId);
 
+    public UserDTO getProfile();
+
     public InputStream getAvatar(String fileName) throws FileNotFoundException;
 
 }

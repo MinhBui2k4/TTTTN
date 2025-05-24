@@ -41,8 +41,7 @@ public class User {
     @JsonIgnore
     private Cart cart;
 
-    // Nếu có orders
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Order> orders;
 }

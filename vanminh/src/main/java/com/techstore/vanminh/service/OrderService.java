@@ -1,13 +1,16 @@
 package com.techstore.vanminh.service;
 
 import com.techstore.vanminh.dto.response.*;
-import com.techstore.vanminh.dto.response.BaseResponse;
+import com.techstore.vanminh.entity.Order;
+
 import org.springframework.data.domain.Pageable;
 
 public interface OrderService {
     OrderResponseDTO createOrder(OrderRequestDTO orderRequestDTO);
 
     OrderResponseDTO createOrderFromCart(Long paymentMethodId, Long shippingAddressId, Double shippingCost);
+
+    BaseResponse<OrderResponseDTO> getOrdersByStatus(Order.OrderStatus status, Pageable pageable);
 
     BaseResponse<OrderResponseDTO> getUserOrders(Pageable pageable);
 
