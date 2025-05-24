@@ -226,6 +226,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public BaseResponse<ProductDTO> getProductIsAvailability(Pageable pageable) {
+        Page<Product> products = productRepository.findByIsAvailabilityTrue(pageable);
+
+        BaseResponse<ProductDTO> response = new BaseResponse<>();
+        response.setContent(products.getContent().stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .collect(Collectors.toList()));
+        response.setPageNumber(products.getNumber());
+        response.setPageSize(products.getSize());
+        response.setTotalElements(products.getTotalElements());
+        response.setTotalPages(products.getTotalPages());
+        response.setLastPage(products.isLast());
+
+        return response;
+    }
+
+    @Override
     public BaseResponse<ProductDTO> findByCategoryCategoryId(Long categoryId, Pageable pageable) {
         Page<Product> products = productRepository.findByCategoryId(categoryId, pageable);
 

@@ -23,6 +23,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.isSale = true")
     Page<Product> findByIsSaleTrue(Pageable pageable);
 
+    @Query("SELECT p FROM Product p WHERE p.availability = true")
+    Page<Product> findByIsAvailabilityTrue(Pageable pageable);
+
     //
     @Query("SELECT p FROM Product p " +
             "WHERE (:categoryId IS NULL OR p.category.id = :categoryId) " +

@@ -92,6 +92,17 @@ public class ProductController {
         return ResponseEntity.ok(productService.getProductIsSales(pageable));
     }
 
+    @GetMapping("/availability")
+    public ResponseEntity<BaseResponse<ProductDTO>> getProductIsAvailability(
+            @RequestParam(defaultValue = "0") Integer pageNumber,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+        Sort sort = sortOrder.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+        return ResponseEntity.ok(productService.getProductIsAvailability(pageable));
+    }
+
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<BaseResponse<ProductDTO>> findByCategoryCategoryId(
             @PathVariable Long categoryId,
