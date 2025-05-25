@@ -8,8 +8,6 @@ import java.util.List;
 @Entity
 @Table(name = "categories")
 @Data
-@Getter
-@Setter
 @NoArgsConstructor
 public class Category {
     @Id

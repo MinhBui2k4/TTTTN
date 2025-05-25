@@ -20,5 +20,4 @@ public class RegisterDTO {
 
     private String roleName; // Ví dụ: "USER", "ADMIN"
 
-    // private MultipartFile avatarFile; // Thêm để hỗ trợ upload avatar
 }

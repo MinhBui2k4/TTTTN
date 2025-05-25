@@ -9,9 +9,12 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 @Component
 public class JwtUtil {
+
+    private static final Logger logger = Logger.getLogger(JwtUtil.class.getName());
 
     @Value("${jwt.secret}")
     private String secret;
@@ -62,7 +65,7 @@ public class JwtUtil {
                     .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
-            System.out.println("Invalid JWT: " + e.getMessage()); // Nên dùng logger trong sản xuất
+            logger.warning("Invalid JWT: " + e.getMessage());
             return false;
         }
     }

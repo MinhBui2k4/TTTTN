@@ -1,10 +1,8 @@
 package com.techstore.vanminh.config;
 
-import com.techstore.vanminh.security.JwtAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import com.techstore.vanminh.security.JwtAuthenticationFilter;
 
 import java.util.List;
 
@@ -24,10 +23,12 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-        @Autowired
-        private JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-        // Public endpoints (no authentication required)
+        public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+                this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        }
+
         private static final String[] PUBLIC_ENDPOINTS = {
                         "/api/auth/**",
                         "/api/products/**",
@@ -37,36 +38,36 @@ public class SecurityConfig {
                         "/webjars/**",
                         "/api/contacts/**",
                         "/api/news/**",
-                        "/api/admin/roles/**",
+                        "/api/hero/**"
         };
 
-        // Endpoints only for ADMIN
         private static final String[] ADMIN_ENDPOINTS = {
                         "/api/admin/**",
                         "/api/admin/categories/**",
                         "/api/admin/brands/**",
                         "/api/admin/roles/**",
-                        "/api/admin/payment-methods/**",
-
+                        "/api/admin/payment-methods/**"
         };
 
-        // Endpoints for both ADMIN and USER
         private static final String[] ADMIN_USER_ENDPOINTS = {
                         "/api/users/**",
                         "/api/users/cart/**",
                         "/api/users/addresses/**",
                         "/api/orders/**",
-                        "/api/users/wishlist/**",
+                        "/api/users/wishlist/**"
         };
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                 http
                                 .csrf(csrf -> csrf.disable())
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                // Trong SecurityConfig
                                 .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Cho phép tất
+                                                                                                        // cả yêu cầu
+                                                                                                        // OPTIONS
                                                 .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                                                 .requestMatchers(ADMIN_ENDPOINTS).hasAuthority("ROLE_ADMIN")
                                                 .requestMatchers(ADMIN_USER_ENDPOINTS)
@@ -74,13 +75,13 @@ public class SecurityConfig {
                                                 .anyRequest().authenticated())
                                 .exceptionHandling(ex -> ex
                                                 .authenticationEntryPoint((req, res, e) -> {
-                                                        res.setStatus(HttpStatus.UNAUTHORIZED.value());
+                                                        res.setStatus(401);
                                                         res.setContentType("application/json");
                                                         res.getWriter().write(
                                                                         "{\"error\": \"Unauthorized: Invalid or expired token\"}");
                                                 })
                                                 .accessDeniedHandler((req, res, e) -> {
-                                                        res.setStatus(HttpStatus.FORBIDDEN.value());
+                                                        res.setStatus(403);
                                                         res.setContentType("application/json");
                                                         res.getWriter().write(
                                                                         "{\"error\": \"Forbidden: Insufficient permissions\"}");
@@ -103,10 +104,11 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowedOriginPatterns(List.of("*"));
+                configuration.setAllowedOriginPatterns(List.of("http://localhost:3000"));
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+                configuration.setAllowedHeaders(List.of("*"));
                 configuration.setAllowCredentials(true);
+                configuration.setExposedHeaders(List.of("Authorization"));
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/**", configuration);
