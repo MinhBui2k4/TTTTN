@@ -38,7 +38,11 @@ public class SecurityConfig {
                         "/webjars/**",
                         "/api/contacts/**",
                         "/api/news/**",
-                        "/api/hero/**"
+                        "/api/hero/**",
+                        "/api/users/image/**",
+                        "/api/products/image/**",
+                        "/api/products/images/**",
+                        "/api/hero/image/**",
         };
 
         private static final String[] ADMIN_ENDPOINTS = {

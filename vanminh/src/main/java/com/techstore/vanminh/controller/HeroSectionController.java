@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -20,12 +21,14 @@ public class HeroSectionController {
 
     private final HeroSectionService heroSectionService;
 
-    @PostMapping
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<HeroSectionDTO> createHero(@ModelAttribute @Valid HeroSectionDTO heroDTO) {
         HeroSectionDTO created = heroSectionService.createHeroSection(heroDTO);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<HeroSectionDTO> updateHero(
             @PathVariable Long id,
@@ -46,6 +49,7 @@ public class HeroSectionController {
         return ResponseEntity.ok(heroSectionService.getHeroSectionById(id));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         heroSectionService.deleteHeroSection(id);

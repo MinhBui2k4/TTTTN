@@ -84,7 +84,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Sản phẩm không tìm thấy với id: " + id));
-        return modelMapper.map(product, ProductDTO.class);
+        return productMapper.toProductDTO(product);
     }
 
     @Override
