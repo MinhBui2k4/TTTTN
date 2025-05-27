@@ -24,5 +24,4 @@ public class NewsDTO {
 
     private LocalDateTime updatedAt;
 
-    private Long authorId;
 }

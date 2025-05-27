@@ -8,6 +8,7 @@ import com.techstore.vanminh.dto.response.BaseResponse;
 
 public interface NewsService {
     NewsDTO createNews(NewsDTO newsDTO);
+    
 
     BaseResponse<NewsDTO> getAllNews(int pageNumber, int pageSize, String search);
 

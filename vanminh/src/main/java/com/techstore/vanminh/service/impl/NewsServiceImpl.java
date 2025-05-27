@@ -48,9 +48,7 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     public NewsDTO createNews(NewsDTO newsDTO) {
-        User author = getCurrentUser();
         News news = modelMapper.map(newsDTO, News.class);
-        news.setAuthor(author);
 
         // Xử lý hình ảnh
         if (newsDTO.getImageFile() != null && !newsDTO.getImageFile().isEmpty()) {

@@ -25,10 +25,6 @@ public class News {
 
     private LocalDateTime updatedAt;
 
-    @ManyToOne
-    @JoinColumn(name = "author_id", nullable = false)
-    private User author; // Admin tạo tin
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

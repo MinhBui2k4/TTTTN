@@ -8,12 +8,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import com.techstore.vanminh.dto.AddressDTO;
-
+import com.techstore.vanminh.dto.NewsDTO;
 import com.techstore.vanminh.dto.RoleDTO;
 import com.techstore.vanminh.dto.WishlistDTO;
 import com.techstore.vanminh.dto.WishlistItemDTO;
 import com.techstore.vanminh.entity.Address;
-
+import com.techstore.vanminh.entity.News;
 import com.techstore.vanminh.entity.Role;
 import com.techstore.vanminh.entity.Wishlist;
 import com.techstore.vanminh.entity.WishlistItem;
@@ -74,7 +74,7 @@ public class VanminhApplication {
 						WishlistItemDTO::setProductId);
 			});
 
-			//Mapping for Wishlist to WishlistDTO
+			// Mapping for Wishlist to WishlistDTO
 			TypeMap<Wishlist, WishlistDTO> wishlistTypeMap = modelMapper.createTypeMap(Wishlist.class,
 					WishlistDTO.class);
 			wishlistTypeMap.addMappings(mapper -> {
@@ -84,6 +84,19 @@ public class VanminhApplication {
 				mapper.map(src -> src.getItems() != null ? src.getItems().stream()
 						.map(item -> modelMapper.map(item, WishlistItemDTO.class))
 						.collect(Collectors.toList()) : new ArrayList<>(), WishlistDTO::setItems);
+			});
+
+			// Add mapping for News to NewsDTO
+			TypeMap<News, NewsDTO> newsTypeMap = modelMapper.createTypeMap(News.class, NewsDTO.class);
+			newsTypeMap.addMappings(mapper -> {
+				logger.info("Configuring News to NewsDTO mapping");
+				mapper.map(News::getId, NewsDTO::setId);
+				mapper.map(News::getTitle, NewsDTO::setTitle);
+				mapper.map(News::getContent, NewsDTO::setContent);
+				mapper.map(News::getImage, NewsDTO::setImage);
+				mapper.map(News::getCreatedAt, NewsDTO::setCreatedAt);
+				mapper.map(News::getUpdatedAt, NewsDTO::setUpdatedAt);
+
 			});
 
 			logger.info("ModelMapper configuration completed successfully");
