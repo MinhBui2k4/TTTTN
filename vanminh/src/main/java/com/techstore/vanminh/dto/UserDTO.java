@@ -17,4 +17,5 @@ public class UserDTO {
     private CartDTO cart;
     private List<OrderResponseDTO> orders;
     private List<RoleDTO> roles;
+    private WishlistDTO wishlist;
 }

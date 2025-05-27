@@ -3,6 +3,8 @@ package com.techstore.vanminh.dto.response;
 import com.techstore.vanminh.dto.AddressDTO;
 import com.techstore.vanminh.dto.CartDTO;
 import com.techstore.vanminh.dto.RoleDTO;
+import com.techstore.vanminh.dto.WishlistDTO;
+
 import lombok.Data;
 
 import java.util.List;
@@ -18,4 +20,5 @@ public class UserDTOResponse {
     private List<RoleDTO> roles;
     private CartDTO cart;
     private List<OrderResponseDTO> orders;
+    private WishlistDTO wishlist; // Add this field
 }

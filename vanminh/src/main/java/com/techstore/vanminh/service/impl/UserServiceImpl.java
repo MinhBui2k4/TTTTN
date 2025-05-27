@@ -11,7 +11,7 @@ import com.techstore.vanminh.service.*;
 import com.techstore.vanminh.util.CartMapper;
 import com.techstore.vanminh.util.OrderMapper;
 import org.springframework.security.core.context.SecurityContextHolder;
-
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -43,6 +43,9 @@ public class UserServiceImpl implements UserService {
     private OrderRepository orderRepository;
 
     @Autowired
+    private WishlistRepository wishlistRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -54,8 +57,37 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private OrderMapper orderMapper;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     @Value("${project.avatar.path}")
     private String avatarPath;
+
+    // Helper method to map Wishlist to WishlistDTO
+    private WishlistDTO mapToWishlistDTO(Wishlist wishlist) {
+        if (wishlist == null) {
+            return null;
+        }
+        WishlistDTO wishlistDTO = new WishlistDTO();
+        wishlistDTO.setId(wishlist.getId());
+        wishlistDTO.setUserId(wishlist.getUser() != null ? wishlist.getUser().getId() : null);
+        wishlistDTO.setItems(wishlist.getItems().stream()
+                .map(this::mapToWishlistItemDTO)
+                .collect(Collectors.toList()));
+        return wishlistDTO;
+    }
+
+    // Helper method to map WishlistItem to WishlistItemDTO
+    private WishlistItemDTO mapToWishlistItemDTO(WishlistItem item) {
+        WishlistItemDTO itemDTO = new WishlistItemDTO();
+        itemDTO.setId(item.getId());
+        itemDTO.setWishlistId(item.getWishlist() != null ? item.getWishlist().getId() : null);
+        itemDTO.setProductId(item.getProduct() != null ? item.getProduct().getId() : null);
+        itemDTO.setProductName(item.getProduct() != null ? item.getProduct().getName() : null);
+        itemDTO.setProductPrice(item.getProduct() != null ? item.getProduct().getPrice() : null);
+        itemDTO.setAvailability(item.getProduct() != null ? item.getProduct().isAvailability() : false);
+        return itemDTO;
+    }
 
     @Override
     public UserDTO registerUser(RegisterDTO registerDTO) {
@@ -159,12 +191,9 @@ public class UserServiceImpl implements UserService {
             response.setCart(cartMapper.mapToCartDTO(updatedUser.getCart()));
         }
 
-        // Comment ánh xạ orders để tránh lỗi
-        // if (updatedUser.getOrders() != null) {
-        // response.setOrders(updatedUser.getOrders().stream()
-        // .map(orderMapper::toOrderResponseDTO)
-        // .collect(Collectors.toList()));
-        // }
+        // Map Wishlist
+        Wishlist wishlist = wishlistRepository.findByUserId(updatedUser.getId()).orElse(null);
+        response.setWishlist(mapToWishlistDTO(wishlist));
 
         return response;
     }
@@ -211,6 +240,9 @@ public class UserServiceImpl implements UserService {
                     .collect(Collectors.toList()));
         }
 
+        // Map Wishlist
+        userDTO.setWishlist(mapToWishlistDTO(user.getWishlist()));
+
         return userDTO;
     }
 
@@ -253,6 +285,10 @@ public class UserServiceImpl implements UserService {
                     .map(orderMapper::toOrderResponseDTO)
                     .collect(Collectors.toList()));
         }
+
+        // Map Wishlist
+        Wishlist wishlist = wishlistRepository.findByUserId(user.getId()).orElse(null);
+        userDTO.setWishlist(mapToWishlistDTO(wishlist));
 
         return userDTO;
     }
@@ -344,6 +380,10 @@ public class UserServiceImpl implements UserService {
                                 .map(orderMapper::toOrderResponseDTO)
                                 .collect(Collectors.toList()));
                     }
+
+                    // Fetch and map Wishlist
+                    Wishlist wishlist = wishlistRepository.findByUserId(user.getId()).orElse(null);
+                    dto.setWishlist(mapToWishlistDTO(wishlist));
 
                     return dto;
                 })

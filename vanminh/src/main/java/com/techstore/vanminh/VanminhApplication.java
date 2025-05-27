@@ -10,13 +10,17 @@ import org.springframework.context.annotation.Bean;
 import com.techstore.vanminh.dto.AddressDTO;
 
 import com.techstore.vanminh.dto.RoleDTO;
+import com.techstore.vanminh.dto.WishlistDTO;
 import com.techstore.vanminh.dto.WishlistItemDTO;
 import com.techstore.vanminh.entity.Address;
 
 import com.techstore.vanminh.entity.Role;
+import com.techstore.vanminh.entity.Wishlist;
 import com.techstore.vanminh.entity.WishlistItem;
 
+import java.util.ArrayList;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @SpringBootApplication
 public class VanminhApplication {
@@ -68,6 +72,18 @@ public class VanminhApplication {
 						WishlistItemDTO::setWishlistId);
 				mapper.map(src -> src.getProduct() != null ? src.getProduct().getId() : null,
 						WishlistItemDTO::setProductId);
+			});
+
+			//Mapping for Wishlist to WishlistDTO
+			TypeMap<Wishlist, WishlistDTO> wishlistTypeMap = modelMapper.createTypeMap(Wishlist.class,
+					WishlistDTO.class);
+			wishlistTypeMap.addMappings(mapper -> {
+				logger.info("Configuring Wishlist to WishlistDTO mapping");
+				mapper.map(Wishlist::getId, WishlistDTO::setId);
+				mapper.map(src -> src.getUser() != null ? src.getUser().getId() : null, WishlistDTO::setUserId);
+				mapper.map(src -> src.getItems() != null ? src.getItems().stream()
+						.map(item -> modelMapper.map(item, WishlistItemDTO.class))
+						.collect(Collectors.toList()) : new ArrayList<>(), WishlistDTO::setItems);
 			});
 
 			logger.info("ModelMapper configuration completed successfully");
