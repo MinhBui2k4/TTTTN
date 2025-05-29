@@ -28,6 +28,9 @@ public class Product {
 
     private Double rating;
 
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
+    private int review;
+
     private String image;
 
     @ElementCollection

@@ -52,8 +52,8 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private FileService fileService;
 
-    private static final String PRODUCT_IMAGE_DIR = "uploads/product";
-    private static final String PRODUCT_IMAGES_DIR = "uploads/products";
+    private static final String PRODUCT_IMAGE_DIR = "Uploads/product";
+    private static final String PRODUCT_IMAGES_DIR = "Uploads/products";
 
     @Override
     public BaseResponse<ProductDTO> getAllProducts(Pageable pageable, Long categoryId, Long brandId, String search,

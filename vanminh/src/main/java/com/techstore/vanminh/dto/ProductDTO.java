@@ -27,6 +27,9 @@ public class ProductDTO {
     @Max(value = 5, message = "Điểm đánh giá không được vượt quá 5")
     private Double rating;
 
+    @PositiveOrZero(message = "Số lượng đánh giá phải lớn hơn hoặc bằng 0")
+    private int review;
+
     private String image;
     private MultipartFile imageFile;
 

@@ -25,6 +25,7 @@ public class ProductMapper {
         dto.setNew(product.isNew());
         dto.setSale(product.isSale());
         dto.setQuantity(product.getQuantity());
+        dto.setReview(product.getReview());
         dto.setCategoryId(product.getCategory() != null ? product.getCategory().getId() : null);
         dto.setBrandId(product.getBrand() != null ? product.getBrand().getId() : null);
         dto.setSku(product.getSku());
