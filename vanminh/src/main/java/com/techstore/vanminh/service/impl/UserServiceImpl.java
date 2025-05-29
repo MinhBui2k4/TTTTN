@@ -251,6 +251,9 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
+        log.info("Fetched user with email: " + email + ", roles: "
+                + (user.getRoles() != null ? user.getRoles().size() : "null"));
+
         UserDTO userDTO = new UserDTO();
         userDTO.setId(user.getId());
         userDTO.setFullName(user.getFullName());
@@ -284,6 +287,21 @@ public class UserServiceImpl implements UserService {
             userDTO.setOrders(user.getOrders().stream()
                     .map(orderMapper::toOrderResponseDTO)
                     .collect(Collectors.toList()));
+        }
+
+        // Ensure roles are fetched and mapped
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            userDTO.setRoles(user.getRoles().stream()
+                    .map(role -> {
+                        RoleDTO roleDTO = new RoleDTO();
+                        roleDTO.setId(role.getId());
+                        roleDTO.setName(role.getName() != null ? role.getName().name() : null);
+                        return roleDTO;
+                    })
+                    .collect(Collectors.toList()));
+        } else {
+            log.warning("No roles found for user with email: " + email);
+            userDTO.setRoles(Collections.emptyList()); // Set an empty list instead of null
         }
 
         // Map Wishlist
