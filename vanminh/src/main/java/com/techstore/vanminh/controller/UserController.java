@@ -1,5 +1,6 @@
 package com.techstore.vanminh.controller;
 
+import com.techstore.vanminh.dto.ChangePasswordDTO;
 import com.techstore.vanminh.dto.UserDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.dto.response.UserDTORequest;
@@ -137,4 +138,21 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body("Thiếu biến userId trong URL. Vui lòng cung cấp ID hợp lệ, ví dụ: /api/users/4");
     }
+
+    @PostMapping("/change-password")
+    @PreAuthorize("hasAnyAuthority('ROLE_USER', 'ROLE_ADMIN')")
+    public ResponseEntity<String> changePassword(@Valid @RequestBody ChangePasswordDTO changePasswordDTO) {
+        try {
+            userService.changePassword(changePasswordDTO);
+            return ResponseEntity.ok("Đổi mật khẩu thành công");
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            log.severe("Unexpected error while changing password: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi đổi mật khẩu");
+        }
+    }
+
 }

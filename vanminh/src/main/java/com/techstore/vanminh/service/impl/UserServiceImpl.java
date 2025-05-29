@@ -404,4 +404,25 @@ public class UserServiceImpl implements UserService {
     public InputStream getAvatar(String fileName) throws FileNotFoundException {
         return fileService.getResource(avatarPath, fileName);
     }
+
+    @Override
+    @Transactional
+    public void changePassword(ChangePasswordDTO changePasswordDTO) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("Received request to change password for email: " + email);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy với email: " + email));
+
+        // Verify old password
+        if (!passwordEncoder.matches(changePasswordDTO.getOldPassword(), user.getPassword())) {
+            log.warning("Incorrect old password for user: " + email);
+            throw new BadRequestException("Mật khẩu cũ không chính xác");
+        }
+
+        // Encode and set new password
+        user.setPassword(passwordEncoder.encode(changePasswordDTO.getNewPassword()));
+        userRepository.save(user);
+        log.info("Password changed successfully for user: " + email);
+    }
 }

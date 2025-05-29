@@ -12,12 +12,12 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/admin/brands")
-@PreAuthorize("hasRole('ROLE_ADMIN')")
 public class BrandController {
 
     @Autowired
     private BrandService brandService;
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping
     public ResponseEntity<BrandDTO> createBrand(@Valid @RequestBody BrandDTO brandDTO) {
         return ResponseEntity.ok(brandService.createBrand(brandDTO));
@@ -37,11 +37,13 @@ public class BrandController {
         return ResponseEntity.ok(brandService.getAllBrands(pageNumber, pageSize, sortBy, sortOrder));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BrandDTO> updateBrand(@PathVariable Long id, @Valid @RequestBody BrandDTO brandDTO) {
         return ResponseEntity.ok(brandService.updateBrand(id, brandDTO));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteBrand(@PathVariable Long id) {
         brandService.deleteBrand(id);

@@ -5,14 +5,13 @@ import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.service.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users/addresses")
-@PreAuthorize("hasRole('ROLE_USER')")
+// @PreAuthorize("hasRole('ROLE_USER')")
 public class AddressController {
 
     @Autowired

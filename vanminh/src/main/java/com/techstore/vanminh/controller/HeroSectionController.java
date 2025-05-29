@@ -30,6 +30,7 @@ public class HeroSectionController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PutMapping("/{id}")
+    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<HeroSectionDTO> updateHero(
             @PathVariable Long id,
             @ModelAttribute @Valid HeroSectionDTO heroDTO) {

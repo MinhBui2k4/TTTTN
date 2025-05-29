@@ -39,16 +39,17 @@ public class SecurityConfig {
                         "/api/contacts/**",
                         "/api/news/**",
                         "/api/hero/**",
+                        "/api/news/image/**",
                         "/api/users/image/**",
                         "/api/products/image/**",
                         "/api/products/images/**",
                         "/api/hero/image/**",
+                        "/api/admin/categories/**",
+                        "/api/admin/brands/**",
         };
 
         private static final String[] ADMIN_ENDPOINTS = {
                         "/api/admin/**",
-                        "/api/admin/categories/**",
-                        "/api/admin/brands/**",
                         "/api/admin/roles/**",
                         "/api/admin/payment-methods/**"
         };
