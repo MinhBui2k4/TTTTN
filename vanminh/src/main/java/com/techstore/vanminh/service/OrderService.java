@@ -19,4 +19,8 @@ public interface OrderService {
     OrderResponseDTO cancelOrder(Long id);
 
     OrderResponseDTO updateOrderStatus(Long id, String status);
+
+    BaseResponse<OrderResponseDTO> getAllOrders(Pageable pageable);
+
+    BaseResponse<OrderResponseDTO> getOrdersByUserIdAndStatus(Long userId, Order.OrderStatus status, Pageable pageable);
 }

@@ -46,12 +46,13 @@ public class SecurityConfig {
                         "/api/hero/image/**",
                         "/api/admin/categories/**",
                         "/api/admin/brands/**",
+                        "/api/admin/payment-methods/**"
+
         };
 
         private static final String[] ADMIN_ENDPOINTS = {
                         "/api/admin/**",
                         "/api/admin/roles/**",
-                        "/api/admin/payment-methods/**"
         };
 
         private static final String[] ADMIN_USER_ENDPOINTS = {
@@ -59,7 +60,8 @@ public class SecurityConfig {
                         "/api/users/cart/**",
                         "/api/users/addresses/**",
                         "/api/orders/**",
-                        "/api/users/wishlist/**"
+                        "/api/users/wishlist/**",
+
         };
 
         @Bean
@@ -109,7 +111,7 @@ public class SecurityConfig {
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowedOriginPatterns(List.of("http://localhost:3000"));
+                configuration.setAllowedOriginPatterns(List.of("http://localhost:3000", "http://localhost:5173"));
                 configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 configuration.setAllowedHeaders(List.of("*"));
                 configuration.setAllowCredentials(true);

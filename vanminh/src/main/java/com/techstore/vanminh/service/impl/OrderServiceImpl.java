@@ -358,4 +358,43 @@ public class OrderServiceImpl implements OrderService {
 
         return response;
     }
+
+    @Override
+    public BaseResponse<OrderResponseDTO> getAllOrders(Pageable pageable) {
+        logger.info("Starting getAllOrders for admin");
+        Page<Order> orders = orderRepository.findAllOrders(pageable);
+        logger.info("Found " + orders.getTotalElements() + " orders");
+
+        BaseResponse<OrderResponseDTO> response = new BaseResponse<>();
+        response.setContent(orderMapper.toOrderResponseDTOList(orders.getContent()));
+        response.setPageNumber(orders.getNumber());
+        response.setPageSize(orders.getSize());
+        response.setTotalElements(orders.getTotalElements());
+        response.setTotalPages(orders.getTotalPages());
+        response.setLastPage(orders.isLast());
+        logger.info("Completed getAllOrders");
+
+        return response;
+    }
+
+    @Override
+    public BaseResponse<OrderResponseDTO> getOrdersByUserIdAndStatus(Long userId, Order.OrderStatus status,
+            Pageable pageable) {
+        logger.info("Starting getOrdersByUserIdAndStatus for userId: " + userId + " and status: " + status);
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Người dùng không tìm thấy với id: " + userId));
+        Page<Order> orders = orderRepository.findByUserIdAndStatus(userId, status, pageable);
+        logger.info("Found " + orders.getTotalElements() + " orders for userId: " + userId + " with status: " + status);
+
+        BaseResponse<OrderResponseDTO> response = new BaseResponse<>();
+        response.setContent(orderMapper.toOrderResponseDTOList(orders.getContent()));
+        response.setPageNumber(orders.getNumber());
+        response.setPageSize(orders.getSize());
+        response.setTotalElements(orders.getTotalElements());
+        response.setTotalPages(orders.getTotalPages());
+        response.setLastPage(orders.isLast());
+        logger.info("Completed getOrdersByUserIdAndStatus for userId: " + userId);
+
+        return response;
+    }
 }

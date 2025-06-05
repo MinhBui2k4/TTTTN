@@ -44,6 +44,7 @@ public class VanminhApplication {
 			addressTypeMap.addMappings(mapper -> {
 				logger.info("Configuring Address to AddressDTO mapping");
 				mapper.map(Address::getId, AddressDTO::setId);
+				mapper.map(src -> src.getUser().getId(), AddressDTO::setUserId); // Add this line for userId mapping
 				mapper.map(Address::getName, AddressDTO::setName);
 				mapper.map(Address::getPhone, AddressDTO::setPhone);
 				mapper.map(Address::getAddress, AddressDTO::setAddress);
@@ -96,7 +97,6 @@ public class VanminhApplication {
 				mapper.map(News::getImage, NewsDTO::setImage);
 				mapper.map(News::getCreatedAt, NewsDTO::setCreatedAt);
 				mapper.map(News::getUpdatedAt, NewsDTO::setUpdatedAt);
-
 			});
 
 			logger.info("ModelMapper configuration completed successfully");

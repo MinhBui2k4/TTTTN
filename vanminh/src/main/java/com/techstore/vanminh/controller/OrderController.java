@@ -110,6 +110,51 @@ public class OrderController {
         return ResponseEntity.ok(orderService.updateOrderStatus(id, request.getStatus()));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @GetMapping("/admin/all")
+    public ResponseEntity<BaseResponse<OrderResponseDTO>> getAllOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "orderDate") String sort,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+        List<String> validSortFields = Arrays.asList("id", "orderDate", "total", "status", "shippingCost");
+        String sortField = validSortFields.contains(sort) ? sort : "orderDate";
+
+        Sort sortObj = sortOrder.equalsIgnoreCase("desc")
+                ? Sort.by(sortField).descending()
+                : Sort.by(sortField).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sortObj);
+
+        return ResponseEntity.ok(orderService.getAllOrders(pageable));
+    }
+
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @GetMapping("/user/{userId}/status/{status}")
+    public ResponseEntity<BaseResponse<OrderResponseDTO>> getOrdersByUserIdAndStatus(
+            @PathVariable Long userId,
+            @PathVariable String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "orderDate") String sort,
+            @RequestParam(defaultValue = "asc") String sortOrder) {
+        try {
+            Order.OrderStatus orderStatus = Order.OrderStatus.valueOf(status.toUpperCase());
+            List<String> validSortFields = Arrays.asList("id", "orderDate", "total", "status", "shippingCost");
+            String sortField = validSortFields.contains(sort) ? sort : "orderDate";
+
+            Sort sortObj = sortOrder.equalsIgnoreCase("desc")
+                    ? Sort.by(sortField).descending()
+                    : Sort.by(sortField).ascending();
+
+            Pageable pageable = PageRequest.of(page, size, sortObj);
+
+            return ResponseEntity.ok(orderService.getOrdersByUserIdAndStatus(userId, orderStatus, pageable));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid order status: " + status);
+        }
+    }
+
     public static class StatusUpdateRequest {
         private String status;
 
