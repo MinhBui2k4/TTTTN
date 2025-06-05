@@ -1,5 +1,6 @@
 package com.techstore.vanminh.controller;
 
+import com.techstore.vanminh.dto.AdminCreateUserDTO;
 import com.techstore.vanminh.dto.ChangePasswordDTO;
 import com.techstore.vanminh.dto.UserDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
@@ -152,6 +153,21 @@ public class UserController {
         } catch (Exception e) {
             log.severe("Unexpected error while changing password: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi khi đổi mật khẩu");
+        }
+    }
+
+      @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PostMapping("/create")
+    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody AdminCreateUserDTO createUserDTO) {
+        try {
+            log.info("Received request to create user with email: " + createUserDTO.getEmail());
+            UserDTO createdUser = userService.createUserByAdmin(createUserDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } catch (BadRequestException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        } catch (Exception e) {
+            log.severe("Unexpected error while creating user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

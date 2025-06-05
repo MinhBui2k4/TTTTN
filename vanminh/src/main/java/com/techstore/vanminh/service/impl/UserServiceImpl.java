@@ -123,6 +123,47 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserDTO createUserByAdmin(AdminCreateUserDTO createUserDTO) {
+        if (userRepository.findByEmail(createUserDTO.getEmail()).isPresent()) {
+            throw new BadRequestException("Email đã tồn tại!");
+        }
+
+        User user = new User();
+        user.setFullName(createUserDTO.getFullName());
+        user.setEmail(createUserDTO.getEmail());
+        user.setPassword(passwordEncoder.encode(createUserDTO.getPassword()));
+        user.setPhone(createUserDTO.getPhone());
+
+        String roleName = createUserDTO.getRoleName() != null ? createUserDTO.getRoleName().toUpperCase() : "USER";
+        try {
+            Role.RoleName roleEnum = Role.RoleName.valueOf(roleName);
+            Role userRole = roleRepository.findByName(roleEnum)
+                    .orElseThrow(() -> new BadRequestException("Vai trò không tồn tại!"));
+            user.setRoles(Collections.singletonList(userRole));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Tên vai trò không hợp lệ!");
+        }
+
+        User createdUser = userRepository.save(user);
+
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(createdUser.getId());
+        userDTO.setFullName(createdUser.getFullName());
+        userDTO.setEmail(createdUser.getEmail());
+        userDTO.setPhone(createdUser.getPhone());
+        userDTO.setAvatarUrl(createdUser.getAvatarUrl());
+        userDTO.setRoles(createdUser.getRoles().stream()
+                .map(role -> {
+                    RoleDTO roleDTO = new RoleDTO();
+                    roleDTO.setId(role.getId());
+                    roleDTO.setName(role.getName() != null ? role.getName().name() : null);
+                    return roleDTO;
+                })
+                .collect(Collectors.toList()));
+        return userDTO;
+    }
+
+    @Override
     @Transactional
     public UserDTOResponse updateUser(Long userId, UserDTORequest userDTO) {
         User user = userRepository.findById(userId)
@@ -239,6 +280,16 @@ public class UserServiceImpl implements UserService {
                     .map(orderMapper::toOrderResponseDTO)
                     .collect(Collectors.toList()));
         }
+
+        // Map roles
+        userDTO.setRoles(user.getRoles() != null ? user.getRoles().stream()
+                .map(role -> {
+                    RoleDTO roleDTO = new RoleDTO();
+                    roleDTO.setId(role.getId());
+                    roleDTO.setName(role.getName() != null ? role.getName().name() : null);
+                    return roleDTO;
+                })
+                .collect(Collectors.toList()) : Collections.emptyList());
 
         // Map Wishlist
         userDTO.setWishlist(mapToWishlistDTO(user.getWishlist()));
@@ -398,6 +449,15 @@ public class UserServiceImpl implements UserService {
                                 .map(orderMapper::toOrderResponseDTO)
                                 .collect(Collectors.toList()));
                     }
+                    // Map roles
+                    dto.setRoles(user.getRoles() != null ? user.getRoles().stream()
+                            .map(role -> {
+                                RoleDTO roleDTO = new RoleDTO();
+                                roleDTO.setId(role.getId());
+                                roleDTO.setName(role.getName() != null ? role.getName().name() : null);
+                                return roleDTO;
+                            })
+                            .collect(Collectors.toList()) : Collections.emptyList());
 
                     // Fetch and map Wishlist
                     Wishlist wishlist = wishlistRepository.findByUserId(user.getId()).orElse(null);

@@ -53,6 +53,7 @@ public class SecurityConfig {
         private static final String[] ADMIN_ENDPOINTS = {
                         "/api/admin/**",
                         "/api/admin/roles/**",
+                        "/api/users/create" // Added new endpoint
         };
 
         private static final String[] ADMIN_USER_ENDPOINTS = {

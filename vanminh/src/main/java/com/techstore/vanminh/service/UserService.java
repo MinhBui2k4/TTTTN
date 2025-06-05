@@ -3,6 +3,7 @@ package com.techstore.vanminh.service;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
+import com.techstore.vanminh.dto.AdminCreateUserDTO;
 import com.techstore.vanminh.dto.ChangePasswordDTO;
 import com.techstore.vanminh.dto.RegisterDTO;
 import com.techstore.vanminh.dto.UserDTO;
@@ -13,6 +14,8 @@ import com.techstore.vanminh.dto.response.UserDTOResponse;
 public interface UserService {
 
     UserDTO registerUser(RegisterDTO registerDTO);
+
+    UserDTO createUserByAdmin(AdminCreateUserDTO createUserDTO);
 
     BaseResponse<UserDTO> getAllUsers(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 
