@@ -267,7 +267,12 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Đơn hàng không tìm thấy với id: " + id));
 
-        if (!order.getUser().getId().equals(user.getId())) {
+        // Kiểm tra vai trò của user hiện tại
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals(Role.RoleName.ADMIN));
+
+        // Nếu không phải admin, kiểm tra quyền sở hữu đơn hàng
+        if (!isAdmin && !order.getUser().getId().equals(user.getId())) {
             throw new BadRequestException("Bạn không có quyền xem đơn hàng này");
         }
 

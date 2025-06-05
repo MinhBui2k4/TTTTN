@@ -3,6 +3,7 @@ package com.techstore.vanminh.service.impl;
 import com.techstore.vanminh.dto.AddressDTO;
 import com.techstore.vanminh.dto.response.BaseResponse;
 import com.techstore.vanminh.entity.Address;
+import com.techstore.vanminh.entity.Role;
 import com.techstore.vanminh.entity.User;
 import com.techstore.vanminh.exception.BadRequestException;
 import com.techstore.vanminh.exception.ResourceNotFoundException;
@@ -93,8 +94,22 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public AddressDTO getAddressById(Long id) {
         User user = getCurrentUser();
-        Address address = addressRepository.findByIdAndUserId(id, user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Địa chỉ không tìm thấy hoặc không thuộc về bạn"));
+        Address address;
+
+        // Kiểm tra vai trò của user hiện tại
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> role.getName().equals(Role.RoleName.ADMIN)); // Sửa ROLE_ADMIN thành ADMIN
+
+        if (isAdmin) {
+            // Nếu là admin, cho phép lấy địa chỉ mà không cần kiểm tra userId
+            address = addressRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Địa chỉ không tìm thấy với id: " + id));
+        } else {
+            // Nếu không phải admin, chỉ lấy địa chỉ của user hiện tại
+            address = addressRepository.findByIdAndUserId(id, user.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Địa chỉ không tìm thấy hoặc không thuộc về bạn"));
+        }
+
         return modelMapper.map(address, AddressDTO.class);
     }
 
