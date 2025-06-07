@@ -82,6 +82,7 @@ public class HeroSectionServiceImpl implements HeroSectionService {
         response.setContent(content);
         response.setPageNumber(pageNumber);
         response.setPageSize(pageSize);
+        response.setTotalElements((long) totalElements); // Set totalElements
         response.setTotalPages(totalPages);
         response.setLastPage(pageNumber >= totalPages - 1);
         return response;

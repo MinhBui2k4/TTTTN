@@ -87,6 +87,7 @@ public class NewsServiceImpl implements NewsService {
         response.setContent(pageContent);
         response.setPageNumber(pageNumber);
         response.setPageSize(pageSize);
+        response.setTotalElements((long) totalElements); // Set totalElements
         response.setTotalPages(totalPages);
         response.setLastPage(pageNumber >= totalPages - 1);
         return response;

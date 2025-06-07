@@ -276,7 +276,6 @@ public class UserServiceImpl implements UserService {
         if (includeOrders && user.getOrders() != null) {
             userDTO.setOrders(user.getOrders().stream()
                     .sorted((o1, o2) -> o2.getOrderDate().compareTo(o1.getOrderDate()))
-                    .limit(10)
                     .map(orderMapper::toOrderResponseDTO)
                     .collect(Collectors.toList()));
         }

@@ -46,14 +46,13 @@ public class SecurityConfig {
                         "/api/hero/image/**",
                         "/api/admin/categories/**",
                         "/api/admin/brands/**",
-                        "/api/admin/payment-methods/**"
-
+                        "/api/admin/payment-methods/**",
         };
 
         private static final String[] ADMIN_ENDPOINTS = {
                         "/api/admin/**",
+                        "/api/users/create",
                         "/api/admin/roles/**",
-                        "/api/users/create" // Added new endpoint
         };
 
         private static final String[] ADMIN_USER_ENDPOINTS = {
@@ -62,7 +61,6 @@ public class SecurityConfig {
                         "/api/users/addresses/**",
                         "/api/orders/**",
                         "/api/users/wishlist/**",
-
         };
 
         @Bean
