@@ -137,6 +137,18 @@
 			<groupId>org.springframework.session</groupId>
 			<artifactId>spring-session-jdbc</artifactId>
 		</dependency>
+		
+		<!-- momo -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.14</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20250107</version>
+		</dependency>
 
 	</dependencies>
 

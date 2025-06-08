@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -47,6 +48,9 @@ public class SecurityConfig {
                         "/api/admin/categories/**",
                         "/api/admin/brands/**",
                         "/api/admin/payment-methods/**",
+                        "/api/payment/momo/callback",
+                        "/api/payment/momo/ipn",
+                        "/api/payment/momo/check/**"
         };
 
         private static final String[] ADMIN_ENDPOINTS = {
@@ -120,4 +124,10 @@ public class SecurityConfig {
                 source.registerCorsConfiguration("/**", configuration);
                 return source;
         }
+
+        @Bean
+        public RestTemplate restTemplate() {
+                return new RestTemplate();
+        }
+
 }

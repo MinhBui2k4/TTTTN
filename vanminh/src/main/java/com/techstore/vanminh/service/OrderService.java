@@ -23,4 +23,6 @@ public interface OrderService {
     BaseResponse<OrderResponseDTO> getAllOrders(Pageable pageable);
 
     BaseResponse<OrderResponseDTO> getOrdersByUserIdAndStatus(Long userId, Order.OrderStatus status, Pageable pageable);
+
+    Order findOrderEntityById(Long id); // New method to fetch Order entity
 }
