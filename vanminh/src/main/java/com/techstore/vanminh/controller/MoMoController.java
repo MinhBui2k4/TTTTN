@@ -74,8 +74,10 @@ public class MoMoController {
                                 "A pending MoMo payment exists for this order. Please complete or cancel it.");
                     });
 
-            // Generate unique transaction ID
-            String transactionId = "MOMO-" + orderId + "-" + UUID.randomUUID().toString().substring(0, 8);
+            // Use orderId as transactionId
+            String transactionId = String.valueOf(orderId);
+            // Generate unique momoOrderId for MoMo API
+            String momoOrderId = "MOMO-" + orderId + "-" + UUID.randomUUID().toString().substring(0, 8);
             String requestId = PaymentGatewayConstant.PARTNER_CODE + System.currentTimeMillis();
             String amount = String.valueOf(request.getAmount().longValue());
             String orderInfo = request.getOrderInfo() != null ? request.getOrderInfo()
@@ -85,13 +87,14 @@ public class MoMoController {
             PaymentTransaction transaction = new PaymentTransaction();
             transaction.setOrder(order);
             transaction.setTransactionId(transactionId);
+            transaction.setMomoOrderId(momoOrderId);
             transaction.setPaymentMethod("MOMO");
             transaction.setStatus("PENDING");
             transaction.setAmount(request.getAmount());
             transaction.setCreatedAt(LocalDateTime.now());
             paymentTransactionRepository.save(transaction);
 
-            Map<String, String> momoParams = buildMoMoParams(requestId, transactionId, amount, orderInfo);
+            Map<String, String> momoParams = buildMoMoParams(requestId, momoOrderId, amount, orderInfo);
             String signature = generateSignature(momoParams);
             momoParams.put("signature", signature);
 
@@ -107,7 +110,7 @@ public class MoMoController {
                 Map<String, String> result = new HashMap<>();
                 result.put("payUrl", responseJson.getString("payUrl"));
                 result.put("originalOrderId", request.getOrderId());
-                result.put("transactionId", transactionId);
+                result.put("momoOrderId", momoOrderId);
                 simpleResponse.setContent(result);
                 simpleResponse.setMessage("Payment URL created successfully");
                 return ResponseEntity.ok(simpleResponse);
@@ -142,23 +145,27 @@ public class MoMoController {
                 return ResponseEntity.badRequest().body(Map.of("status", "failed", "message", "Invalid signature"));
             }
 
-            String transactionId = momoParams.get("orderId");
-            String resultCode = momoParams.get("resultCode");
-
-            PaymentTransaction transaction = paymentTransactionRepository.findByTransactionId(transactionId)
-                    .orElseThrow(() -> new IllegalStateException("Transaction not found: " + transactionId));
+            // Use MoMo's orderId as momoOrderId
+            String momoOrderId = momoParams.get("orderId");
+            PaymentTransaction transaction = paymentTransactionRepository.findByMomoOrderId(momoOrderId)
+                    .orElseThrow(
+                            () -> new IllegalStateException("Transaction not found for momoOrderId: " + momoOrderId));
 
             Long orderId = transaction.getOrder().getId();
-            if ("0".equals(resultCode)) {
-                transaction.setStatus("SUCCESS");
-                orderService.updateOrderStatus(orderId, "CONFIRMED");
-            } else {
-                transaction.setStatus("FAILED");
-                orderService.updateOrderStatus(orderId, "CANCELLED");
+            String resultCode = momoParams.get("resultCode");
+
+            // Chỉ cập nhật nếu trạng thái chưa được xử lý
+            if (!transaction.getStatus().equals("SUCCESS") && !transaction.getStatus().equals("FAILED")) {
+                if ("0".equals(resultCode)) {
+                    transaction.setStatus("SUCCESS");
+                    orderService.updateOrderStatus(orderId, "CONFIRMED");
+                } else {
+                    transaction.setStatus("FAILED");
+                    orderService.updateOrderStatus(orderId, "CANCELLED");
+                }
+                transaction.setMoMoResponse(truncateString(momoParams.toString(), MAX_RESPONSE_LENGTH));
+                paymentTransactionRepository.save(transaction);
             }
-            // Truncate response if necessary
-            transaction.setMoMoResponse(truncateString(momoParams.toString(), MAX_RESPONSE_LENGTH));
-            paymentTransactionRepository.save(transaction);
 
             return ResponseEntity.ok(Map.of(
                     "status", "0".equals(resultCode) ? "success" : "failed",
@@ -181,23 +188,27 @@ public class MoMoController {
                 return ResponseEntity.badRequest().body(Map.of("status", "failed", "message", "Invalid signature"));
             }
 
-            String transactionId = momoParams.get("orderId");
-            PaymentTransaction transaction = paymentTransactionRepository.findByTransactionId(transactionId)
-                    .orElseThrow(() -> new IllegalStateException("Transaction not found: " + transactionId));
+            // Use MoMo's orderId as momoOrderId
+            String momoOrderId = momoParams.get("orderId");
+            PaymentTransaction transaction = paymentTransactionRepository.findByMomoOrderId(momoOrderId)
+                    .orElseThrow(
+                            () -> new IllegalStateException("Transaction not found for momoOrderId: " + momoOrderId));
 
             Long orderId = transaction.getOrder().getId();
             String resultCode = momoParams.get("resultCode");
 
-            if ("0".equals(resultCode)) {
-                transaction.setStatus("SUCCESS");
-                orderService.updateOrderStatus(orderId, "CONFIRMED");
-            } else {
-                transaction.setStatus("FAILED");
-                orderService.updateOrderStatus(orderId, "CANCELLED");
+            // Chỉ cập nhật nếu trạng thái chưa được xử lý
+            if (!transaction.getStatus().equals("SUCCESS") && !transaction.getStatus().equals("FAILED")) {
+                if ("0".equals(resultCode)) {
+                    transaction.setStatus("SUCCESS");
+                    orderService.updateOrderStatus(orderId, "CONFIRMED");
+                } else {
+                    transaction.setStatus("FAILED");
+                    orderService.updateOrderStatus(orderId, "CANCELLED");
+                }
+                transaction.setMoMoResponse(truncateString(momoParams.toString(), MAX_RESPONSE_LENGTH));
+                paymentTransactionRepository.save(transaction);
             }
-            // Truncate response if necessary
-            transaction.setMoMoResponse(truncateString(momoParams.toString(), MAX_RESPONSE_LENGTH));
-            paymentTransactionRepository.save(transaction);
 
             return ResponseEntity.ok(Map.of("status", "success", "message", "IPN processed"));
         } catch (Exception e) {
@@ -206,14 +217,15 @@ public class MoMoController {
         }
     }
 
-    @GetMapping("/check/{transactionId}")
-    public ResponseEntity<SimpleResponse<Map<String, String>>> checkPaymentStatus(@PathVariable String transactionId) {
+    @GetMapping("/check/{momoOrderId}")
+    public ResponseEntity<SimpleResponse<Map<String, String>>> checkPaymentStatus(@PathVariable String momoOrderId) {
         try {
-            LOGGER.info("Checking MoMo payment status for transaction: {}", transactionId);
-            PaymentTransaction transaction = paymentTransactionRepository.findByTransactionId(transactionId)
-                    .orElseThrow(() -> new IllegalStateException("Transaction not found: " + transactionId));
+            LOGGER.info("Checking MoMo payment status for momoOrderId: {}", momoOrderId);
+            PaymentTransaction transaction = paymentTransactionRepository.findByMomoOrderId(momoOrderId)
+                    .orElseThrow(
+                            () -> new IllegalStateException("Transaction not found for momoOrderId: " + momoOrderId));
 
-            String response = queryPaymentStatus(transactionId);
+            String response = queryPaymentStatus(momoOrderId);
             JSONObject responseJson = new JSONObject(response);
             String resultCode = responseJson.optString("resultCode", "-1");
 
@@ -222,18 +234,21 @@ public class MoMoController {
             Long orderId = transaction.getOrder().getId();
 
             if ("0".equals(resultCode)) {
-                transaction.setStatus("SUCCESS");
-                orderService.updateOrderStatus(orderId, "CONFIRMED");
+                if (!transaction.getStatus().equals("SUCCESS")) {
+                    transaction.setStatus("SUCCESS");
+                    orderService.updateOrderStatus(orderId, "CONFIRMED");
+                }
                 result.put("status", "success");
                 result.put("message", "Payment successful");
             } else {
-                transaction.setStatus("FAILED");
-                orderService.updateOrderStatus(orderId, "CANCELLED");
+                if (!transaction.getStatus().equals("FAILED")) {
+                    transaction.setStatus("FAILED");
+                    orderService.updateOrderStatus(orderId, "CANCELLED");
+                }
                 result.put("status", "failed");
                 result.put("message", "Payment failed: " + responseJson.optString("message"));
             }
             result.put("orderId", String.valueOf(orderId));
-            // Truncate response if necessary
             transaction.setMoMoResponse(truncateString(response, MAX_RESPONSE_LENGTH));
             paymentTransactionRepository.save(transaction);
 
@@ -257,14 +272,14 @@ public class MoMoController {
         }
     }
 
-    private Map<String, String> buildMoMoParams(String requestId, String transactionId, String amount,
+    private Map<String, String> buildMoMoParams(String requestId, String momoOrderId, String amount,
             String orderInfo) {
         Map<String, String> params = new HashMap<>();
         params.put("partnerCode", PaymentGatewayConstant.PARTNER_CODE);
         params.put("accessKey", PaymentGatewayConstant.ACCESS_KEY);
         params.put("requestId", requestId);
         params.put("amount", amount);
-        params.put("orderId", transactionId);
+        params.put("orderId", momoOrderId);
         params.put("orderInfo", orderInfo);
         params.put("redirectUrl", PaymentGatewayConstant.REDIRECT_URL);
         params.put("ipnUrl", PaymentGatewayConstant.IPN_URL);
@@ -320,18 +335,18 @@ public class MoMoController {
         }
     }
 
-    private String queryPaymentStatus(String transactionId) throws Exception {
+    private String queryPaymentStatus(String momoOrderId) throws Exception {
         String requestId = PaymentGatewayConstant.PARTNER_CODE + System.currentTimeMillis();
         String rawSignature = String.format(
                 "accessKey=%s&orderId=%s&partnerCode=%s&requestId=%s",
-                PaymentGatewayConstant.ACCESS_KEY, transactionId, PaymentGatewayConstant.PARTNER_CODE, requestId);
+                PaymentGatewayConstant.ACCESS_KEY, momoOrderId, PaymentGatewayConstant.PARTNER_CODE, requestId);
         String signature = signHmacSHA256(rawSignature, PaymentGatewayConstant.SECRET_KEY);
 
         JSONObject requestBody = new JSONObject();
         requestBody.put("partnerCode", PaymentGatewayConstant.PARTNER_CODE);
         requestBody.put("accessKey", PaymentGatewayConstant.ACCESS_KEY);
         requestBody.put("requestId", requestId);
-        requestBody.put("orderId", transactionId);
+        requestBody.put("orderId", momoOrderId);
         requestBody.put("signature", signature);
         requestBody.put("lang", "en");
 

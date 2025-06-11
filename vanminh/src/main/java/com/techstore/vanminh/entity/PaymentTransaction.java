@@ -19,6 +19,9 @@ public class PaymentTransaction {
     @Column(nullable = false, unique = true)
     private String transactionId;
 
+    @Column
+    private String momoOrderId; // Lưu orderId gửi đến MoMo
+
     @Column(nullable = false)
     private String paymentMethod; // e.g., "MOMO"
 
