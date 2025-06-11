@@ -20,18 +20,18 @@ public class PaymentTransaction {
     private String transactionId;
 
     @Column
-    private String momoOrderId; // Lưu orderId gửi đến MoMo
+    private String momoOrderId; 
 
     @Column(nullable = false)
-    private String paymentMethod; // e.g., "MOMO"
+    private String paymentMethod; 
 
     @Column(nullable = false)
-    private String status; // e.g., PENDING, SUCCESS, FAILED
+    private String status; 
 
     private Double amount;
 
     private LocalDateTime createdAt;
 
     @Column(columnDefinition = "MEDIUMTEXT")
-    private String moMoResponse; // Store MoMo API response
+    private String moMoResponse; 
 }
